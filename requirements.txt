@@ -1,0 +1,1 @@
+-e git+https://github.com/mckib2/mr_utils.git#egg=mr_utils
