@@ -1,15 +1,19 @@
+'''GASP module.'''
+
 import numpy as np
 import matplotlib.pyplot as plt
 
-def gasp(I, D):
+def gasp(I, D, pc_dim=0):
     '''Generation of Arbitrary Spectral Profiles.
 
     Parameters
     ----------
     I : array_like
-        Vector of phase-cycles, samples of implicit spectral profile.
+        Array of phase-cycled images.
     D : array_like
         Vector of samples of desired spectral profile.
+    pc_dim : int, optional
+        Axis containing phase-cycles.
 
     Returns
     -------
@@ -17,11 +21,25 @@ def gasp(I, D):
         Closest approximation to D.
     '''
 
-    # Ix = D
-    # x = np.linalg.pinv(I[None, :]).dot(D[None, :])
-    x = np.linalg.pinv(I[:, None]).dot(D[:, None])
-    print(x)
-    return I.dot(x)
+    # Let's put the phase-cycle dimension last
+    I = np.moveaxis(I, pc_dim, -1)
+
+    # Save the in-plane dimsensions for reshape at end
+    xx, yy = I.shape[:2]
+
+    # Now let's put all the voxels' time curves down the first dim
+    I = I.reshape((-1, I.shape[-1]))
+
+    # Now repeat the desired spectral profile the correct number of
+    # times to line up with the length of each column
+    D = np.tile(D, (int(I.shape[0]/D.size),))
+    # print(I.shape, D.shape)
+
+    # Now solve the system
+    x = np.linalg.lstsq(I, D, rcond=None)[0]
+
+    return I.conj().dot(x).reshape(xx, yy)
+
 
 if __name__ == '__main__':
     pass
