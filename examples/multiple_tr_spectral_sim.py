@@ -1,4 +1,4 @@
-'''Example showing how to GASP using multiple PCs and TRs.'''
+'''Example showing spectral shaping using multiple PCs and TRs.'''
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -10,8 +10,8 @@ if __name__ == '__main__':
 
     # Simulation parameters
     nTRs = 4
-    npcs = 16
-    N = 128
+    npcs = 8
+    N = 16
 
     # Experiment parameters
     TR0, TR1 = 3e-3, 12e-3
@@ -23,10 +23,46 @@ if __name__ == '__main__':
     # Figure out minimum off-resonance we can resolve given the TRs
     # we chose
     maxTR = np.max(TRs)
+    minTR = np.min(TRs)
     df_range = (-1/maxTR, 1/maxTR)
 
     # Get a numerical phantom
     PD, T1s, T2s, df = get_cylinder(N, df_range)
+
+    # Acquire all TRs at all pcs
+    I = np.zeros((nTRs, npcs, N, N), dtype='complex')
+    for ii, TR in enumerate(TRs):
+        I[ii, ...] = ssfp(T1s, T2s, TR, alpha, df, pcs, PD)
+
+    # Now we need a forcing function that will be compatible with
+    # the periodic spectra at each voxel in I along the phase-cycle
+    # dimension.  To do this we will parameterize the forcing
+    # function g(f) by frequency:
+    def g(f):
+        '''Frequency template function.
+
+        Parameters
+        ----------
+        f : float
+            Frequency (in Hz).
+
+        Returns
+        -------
+        g(f) : complex
+            Desired response at frequency f.
+        '''
+        # Naive triangle function implementation
+        out = np.zeros(f.shape)
+        for jj, ff in np.ndenumerate(f):
+            if ff < -1/maxTR:
+                out[jj] = 0
+            elif ff > 1/maxTR:
+                out[jj] = 0
+            else:
+                out[jj] = 1 - np.abs(ff)
+        out[np.abs(out) > 0] -= np.min(out)
+        return out
+
 
     # Here starts the funny business when you start using multiple
     # TRs...
@@ -68,7 +104,7 @@ if __name__ == '__main__':
             df0 = np.linspace(
                 -1/minTRext, 1/minTRext, Iext.size, endpoint=False)
 
-            # We want everyone to have the same frequenct axis, so
+            # We want everyone to have the same frequency axis, so
             # we'll have to do some interpolation to get there
             Iint_mag = np.interp(df1, df0, np.abs(Iext))
             Iint_pha = np.interp(df1, df0, np.angle(Iext))

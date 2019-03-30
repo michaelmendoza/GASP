@@ -37,8 +37,9 @@ def gasp(I, D, pc_dim=0):
 
     # Now solve the system
     x = np.linalg.lstsq(I, D, rcond=None)[0]
+    # print(x.shape)
 
-    return I.conj().dot(x).reshape(xx, yy)
+    return I.dot(x).reshape(xx, yy)
 
 
 if __name__ == '__main__':
