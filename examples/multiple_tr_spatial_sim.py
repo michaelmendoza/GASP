@@ -7,10 +7,12 @@ import matplotlib.pyplot as plt
 from matplotlib import animation
 from mr_utils.sim.ssfp import ssfp
 
-from get_cylinder import get_cylinder #pylint: disable=C0413
 
+#pylint: disable=C0413
 sys.path.insert(0, './')
-from gasp import gasp #pylint: disable=C0413
+from gasp import gasp
+from gasp import get_cylinder
+#pylint: enable=C0413
 
 def g(x0, bw):
     '''Spatial forcing function.
@@ -42,19 +44,17 @@ def g(x0, bw):
 if __name__ == '__main__':
 
     # Simulation parameters
-    nTRs = 4
-    npcs = 6
-    N = 128
+    nTRs = 4 # number of TR
+    TR_lo, TR_hi = 3e-3, 12e-3 # bounds of linspace for TRs
+    npcs = 6 # number of phase-cycles at each TR
+    N = 128 # matrix size NxN
 
     # Experiment parameters
-    TR0, TR1 = 3e-3, 12e-3
-    TRs = np.linspace(TR0, TR1, nTRs) # Optimize these!
-    print(TRs)
+    TRs = np.linspace(TR_lo, TR_hi, nTRs) # Optimize these!
     alpha = np.deg2rad(30)
     pcs = np.linspace(-2*np.pi, 2*np.pi, npcs, endpoint=False)
 
-    # Figure out minimum off-resonance we can resolve given the TRs
-    # we chose
+    # Simple linear gradient off-resonance
     maxTR = np.max(TRs)
     minTR = np.min(TRs)
     df_range = (-1/maxTR, 1/maxTR)
@@ -62,7 +62,7 @@ if __name__ == '__main__':
     # Get a numerical phantom
     PD, T1s, T2s, df = get_cylinder(N, df_range)
 
-    # Acquire all TRs at all pcs
+    # Acquire all pcs at all TRs
     I = np.zeros((nTRs, npcs, N, N), dtype='complex')
     for ii, TR in enumerate(TRs):
         I[ii, ...] = ssfp(T1s, T2s, TR, alpha, df, pcs, PD)
@@ -70,14 +70,13 @@ if __name__ == '__main__':
     # Combine TR/phase-cycle dimension
     I = I.reshape((nTRs*npcs, N, N))
 
-
-    # Do a neat thing a sweep across left to right
+    # Do a neat thing a sweep across left to right while GASPing
     fig = plt.figure()
     im = plt.imshow(np.abs(I[0, ...]), vmin=0, vmax=1)
     D = g(np.linspace(-1/minTR, 1/minTR, N), bw=1/(maxTR))
     def animate(frame):
         '''Run plot update.'''
-        # Construct the spatial forcing function
+        # Construct the shifted spatial forcing function
         _D = np.roll(D, -int(N/2) + frame)
         _I = gasp(I, _D, pc_dim=0) # GASP!
         im.set_data(np.abs(_I))

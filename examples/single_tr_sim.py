@@ -1,4 +1,9 @@
-'''Example of how GASP works using simulated data.'''
+'''Example of how GASP works using simulated data using single TR.
+
+I'm not completely sure that this is working.  Might not be that
+interesting anyway because it only uses one TR and thus must get all
+of its spectral information from many phase-cycles.
+'''
 
 import sys
 

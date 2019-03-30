@@ -1,7 +1,6 @@
 '''GASP module.'''
 
 import numpy as np
-import matplotlib.pyplot as plt
 
 def gasp(I, D, pc_dim=0):
     '''Generation of Arbitrary Spectral Profiles.
@@ -18,7 +17,7 @@ def gasp(I, D, pc_dim=0):
     Returns
     -------
     I0 : array_like
-        Closest approximation to D.
+        Combined image with spatial response approximating D.
     '''
 
     # Let's put the phase-cycle dimension last

@@ -1,10 +1,57 @@
-'''Example showing spectral shaping using multiple PCs and TRs.'''
+'''Example showing spectral shaping using multiple PCs and TRs.
+
+This example is a little bit different than the spatial shaping
+because we won't assume that we have a uniform phantom and thus we
+can't rely on image space to give us information about the frequency
+response of each voxel.
+
+Not working currently, not sure if it's worth it because there will
+need to be some adjusting for phase effects introduced by RF Tx/Rx
+coils.
+'''
+
+import sys
 
 import numpy as np
 import matplotlib.pyplot as plt
 from mr_utils.sim.ssfp import ssfp
 
-from get_cylinder import get_cylinder #pylint: disable=C0413
+sys.path.insert(0, './')
+from gasp import get_cylinder #pylint: disable=C0413
+
+
+# We need a forcing function that will be compatible with
+# the periodic spectra at each voxel in I along the phase-cycle
+# dimension.  To do this we will parameterize the forcing
+# function g(f) by frequency:
+def g(f, maxTR):
+    '''Frequency template function.
+
+    Parameters
+    ----------
+    f : float
+        Frequency (in Hz).
+    maxTR : float
+        The highest value TR that is acquired (in sec).
+
+    Returns
+    -------
+    g(f) : complex
+        Desired response at frequency f.
+    '''
+    # Naive triangle function implementation
+    out = np.zeros(f.shape)
+    for jj, ff in np.ndenumerate(f):
+        if ff < -1/maxTR:
+            out[jj] = 0
+        elif ff > 1/maxTR:
+            out[jj] = 0
+        else:
+            out[jj] = 1 - np.abs(ff)
+    out[np.abs(out) > 0] -= np.min(out)
+    return out
+
+
 
 if __name__ == '__main__':
 
@@ -15,7 +62,7 @@ if __name__ == '__main__':
 
     # Experiment parameters
     TR0, TR1 = 3e-3, 12e-3
-    TRs = np.linspace(TR0, TR1, nTRs) # Optimize these!
+    TRs = np.linspace(TR0, TR1, nTRs)
     print(TRs)
     alpha = np.deg2rad(30)
     pcs = np.linspace(-2*np.pi, 2*np.pi, npcs, endpoint=False)
@@ -29,43 +76,10 @@ if __name__ == '__main__':
     # Get a numerical phantom
     PD, T1s, T2s, df = get_cylinder(N, df_range)
 
-    # Acquire all TRs at all pcs
-    I = np.zeros((nTRs, npcs, N, N), dtype='complex')
-    for ii, TR in enumerate(TRs):
-        I[ii, ...] = ssfp(T1s, T2s, TR, alpha, df, pcs, PD)
-
-    # Now we need a forcing function that will be compatible with
-    # the periodic spectra at each voxel in I along the phase-cycle
-    # dimension.  To do this we will parameterize the forcing
-    # function g(f) by frequency:
-    def g(f):
-        '''Frequency template function.
-
-        Parameters
-        ----------
-        f : float
-            Frequency (in Hz).
-
-        Returns
-        -------
-        g(f) : complex
-            Desired response at frequency f.
-        '''
-        # Naive triangle function implementation
-        out = np.zeros(f.shape)
-        for jj, ff in np.ndenumerate(f):
-            if ff < -1/maxTR:
-                out[jj] = 0
-            elif ff > 1/maxTR:
-                out[jj] = 0
-            else:
-                out[jj] = 1 - np.abs(ff)
-        out[np.abs(out) > 0] -= np.min(out)
-        return out
-
-
+    #################################################################
     # Here starts the funny business when you start using multiple
     # TRs...
+    #################################################################
 
     # What's the frequency resolution that we need to represent all
     # the TRs faithfully (i.e., all points we acquire fall on the
@@ -116,14 +130,22 @@ if __name__ == '__main__':
 
             # Stuff the interpolated, periodically extented signal
             # into the buffer
-            I0[ii, :, x, y] = Iint
+            I[ii, :, x, y] = Iint
 
             # # Debug plot to make sure interpolation worked
             # plt.plot(df1, np.abs(Iint))
             # plt.plot(df0, np.abs(Iext), '*')
             # plt.show()
 
+        # # Debug plot to check out representative voxel from each TR
+        # plt.plot(df1, np.abs(I[ii, :, m, m]))
+        # plt.show()
+
     # Now we need to construct our coefficient matrix with columns
     # made up of the flattened spectral profiles of each voxel for
     # a single image
-    # A = I0.reshape()
+    # I = I.reshape()
+
+    # The we need to find a coefficient for each voxel
+
+    # Construct the image voxel-wise and reshape
