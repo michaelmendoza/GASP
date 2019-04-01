@@ -81,6 +81,12 @@ if __name__ == '__main__':
             I[cc, ii, ...] = csm[cc, ...]*ssfp(
                 T1s, T2s, TR, alpha, df, pcs, PD)
 
+            # Correct phase profile
+            Imag = np.abs(I[cc, ii, ...])
+            Iphase = np.angle(I[cc, ii, ...]) - np.tile(
+                pcs/2, (N, N, 1)).T
+            I[cc, ii, ...] = Imag*np.exp(1j*Iphase)
+
     # Combine TR/phase-cycle dimension
     I = I.reshape((ncoils, nTRs*npcs, N, N))
 
