@@ -10,11 +10,9 @@ frame update.
 TODO
 ----
 - Find optimal values for TR and do performance analysis for npcs and
-nTRs.
+  nTRs.
 - Try different forcing functions
 '''
-
-import sys
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -22,11 +20,7 @@ from matplotlib import animation
 from ismrmrdtools.simulation import generate_birdcage_sensitivities
 from mr_utils.sim.ssfp import ssfp
 
-#pylint: disable=C0413
-sys.path.insert(0, './')
-from gasp import gasp
-from gasp import get_cylinder
-#pylint: enable=C0413
+from gasp import gasp, get_cylinder
 
 def g(x0, bw):
     '''Spatial forcing function.
