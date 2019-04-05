@@ -2,3 +2,5 @@
 __pycache__/
 src/
 data/
+
+!data/*/save_data_to_npy.py
