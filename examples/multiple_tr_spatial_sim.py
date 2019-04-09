@@ -21,6 +21,7 @@ import matplotlib.pyplot as plt
 from matplotlib import animation
 from ismrmrdtools.simulation import generate_birdcage_sensitivities
 from mr_utils.sim.ssfp import ssfp
+from tqdm import trange
 
 from gasp import gasp, get_cylinder, triangle as g
 
@@ -32,6 +33,7 @@ if __name__ == '__main__':
     npcs = 6 # number of phase-cycles at each TR
     ncoils = 2 # number of coils
     N = 128 # matrix size NxN
+    C_dim = (2, N-20) # Calibration box - (# Number of lines of calibration, Pixels on signal)
 
     # Experiment parameters
     TRs = np.linspace(TR_lo, TR_hi, nTRs) # Optimize these!
@@ -52,7 +54,7 @@ if __name__ == '__main__':
     # Acquire all pcs at all TRs for all coils
     I = np.zeros((ncoils, nTRs, npcs, N, N), dtype='complex')
     for ii, TR in enumerate(TRs):
-        for cc in range(ncoils):
+        for cc in trange(ncoils, leave=False):
             I[cc, ii, ...] = csm[cc, ...]*ssfp(
                 T1s, T2s, TR, alpha, df, pcs, PD)
 
@@ -79,7 +81,7 @@ if __name__ == '__main__':
         # GASP for each coil
         Ic = np.zeros((ncoils, N, N), dtype='complex')
         for kk in range(ncoils):
-            Ic[kk, ...] = gasp(I[kk, ...], _D, pc_dim=0)
+            Ic[kk, ...] = gasp(I[kk, ...], _D, C_dim, pc_dim=0)
 
         # Do SOS and call it good
         _I = np.sqrt(np.sum(np.abs(Ic)**2, axis=0))
@@ -93,7 +95,7 @@ if __name__ == '__main__':
 
     # Just look at a single slice of the first coil
     D0 = np.roll(D, int(N/5))
-    I0 = gasp(I[0, ...], D0, pc_dim=0)
+    I0 = gasp(I[0, ...], D0, C_dim, pc_dim=0)
     plt.plot(np.abs(I0[int(N/2), :]), label='Simulated Profile')
     plt.plot(D0, '--', label='Desired Profile')
     plt.legend()

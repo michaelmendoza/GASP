@@ -11,3 +11,4 @@
 
 - Create periodic forcing function
 - Mask things outside of a period so it isn't included in the calculation
+- Could also only consider the center line 

@@ -9,15 +9,18 @@ from mr_utils import view
 from mr_utils.recon.ssfp import gs_recon
 from tqdm import trange
 from skimage.filters import threshold_li
+from time import time
 
 from gasp import gasp, triangle, triangle_periodic 
 
 if __name__ == '__main__':
   
   dataset = 2
+  t0 = time()
   data0 = np.load('data/20190401_GASP_PHANTOM/set%d_tr6_te3.npy' % dataset)
   data1 = np.load('data/20190401_GASP_PHANTOM/set%d_tr12_te6.npy' % dataset)
   data2 = np.load('data/20190401_GASP_PHANTOM/set%d_tr24_te12.npy' % dataset)
+  print(time() - t0)
 
   print(data0.shape) # [Height, Width, Coil, Avg, PCs]
 
@@ -38,6 +41,7 @@ if __name__ == '__main__':
   data = np.moveaxis(data, 2, 0) # [Coil, Height, Width, PCs x TRs]
   data = data.transpose((0, 3, 2, 1)) # [Coil,  PCs x TRs, Width, Height]
   ncoils, npcs, width, height = data.shape[:]
+  C_dim = (10, width) # Calibration box - (# Number of lines of calibration, Pixels on signal)
 
   # view(data, fft_axes=(-2, -1), montage_axis=0, movie_axis=1, movie_interval=200)
 
@@ -52,7 +56,7 @@ if __name__ == '__main__':
 
   Ic = np.zeros((ncoils, width, height), dtype='complex')
   for cc in trange(ncoils, leave=False):
-    Ic[cc, ...] = gasp(data[cc, ...], D, pc_dim=0)
+    Ic[cc, ...] = gasp(data[cc, ...], D, C_dim, pc_dim=0)
   Ic = np.sqrt(np.sum(np.abs(Ic)**2, axis=0))
 
   plt.subplot(1, 3, 1)
