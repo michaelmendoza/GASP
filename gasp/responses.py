@@ -30,6 +30,27 @@ def triangle(x0, bw):
     return out/np.max(np.abs(out))
 
 def triangle_periodic(img_width, period, offset, bw):
+    '''Spatial forcing function - Periodic Triangle with bandwidth (bw)
+
+    Parameters
+    ----------
+    img_width : array_like
+        Width of image singal
+    period: int
+        Period in pixels of forcing function
+    offset: int
+        Offset in pixels (i.e. cyclic shift)
+    bw : float
+        Bandwidth (width in pixel from base of triangle) of forcing function 
+
+    Returns
+    -------
+    g(x) : complex
+        Desired spatial response of uniform phantom with periodic off resonance 
+    '''
+
+    bw = round(bw)
+    period = round(period)
 
     assert period >= bw
 

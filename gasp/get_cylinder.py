@@ -2,7 +2,7 @@
 
 import numpy as np
 
-def get_cylinder(N, df_range=None, radius=None):
+def get_cylinder(N, df_range=None, radius=None, PD=1, T1=1.2, T2=.035):
     '''Axial slice of cylindrical phantom.
 
     Parameters
@@ -13,10 +13,16 @@ def get_cylinder(N, df_range=None, radius=None):
         Min and max values for linear off-resonance map (in Hz).
     radius : float, optional
         Normalized radius of cylinder (0 < radius < 1).
-
+    PD : float, optional
+        Proton Density
+    T1 : float, optional
+        T1 value in seconds
+    T2 : float, optional
+        T2 value in seconds
+    
     Returns
     -------
-    PD : array_like
+    PDs : array_like
         Matrix of proton density values (arbitrary units).
     T1s : array_like
         Matrix of T1 values (in sec).
@@ -41,12 +47,12 @@ def get_cylinder(N, df_range=None, radius=None):
 
     # Fill in these indices with the values we want
     dims = (N, N)
-    PD = np.zeros(dims)
+    PDs = np.zeros(dims)
     T1s = np.zeros(dims)
     T2s = np.zeros(dims)
-    PD[bottle_idx] = 1
-    T1s[bottle_idx] = 1.2
-    T2s[bottle_idx] = .035
+    PDs[bottle_idx] = PD
+    T1s[bottle_idx] = T1
+    T2s[bottle_idx] = T2
 
     # If the user didn't specify an off-resonance range, then they
     # don't want any off-resonance
@@ -58,4 +64,4 @@ def get_cylinder(N, df_range=None, radius=None):
         fy = np.zeros(N)
         df, _ = np.meshgrid(fx, fy)
 
-    return(PD, T1s, T2s, df)
+    return(PDs, T1s, T2s, df)
