@@ -35,6 +35,8 @@ def gasp(I, D, C_dim, pc_dim=0 ):
     I = I[mid[0]-pad[0]:mid[0]+pad[0], mid[1]-pad[1]:mid[1]+pad[1], :]
     D = D[mid[1]-pad[1]:mid[1]+pad[1]]
 
+    #view(I, movie_axis=-1)
+
     # Now let's put all the voxels' time curves down the first dim
     I = I.reshape((-1, I.shape[-1]))
 
