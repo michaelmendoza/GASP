@@ -29,7 +29,6 @@ from gasp import gasp, get_cylinder, triangle_periodic as g
 if __name__ == '__main__':
 
     # Simulation parameters
-    nTRs = 3 # number of TR
     npcs = 16 # number of phase-cycles at each TR
     ncoils = 1 # number of coils
     height, width = 256, 512
@@ -40,10 +39,16 @@ if __name__ == '__main__':
 
     # Experiment parameters
     TRs = [6e-3, 12e-3, 24e-3] # Optimize these!
+    nTRs = len(TRs) # number of TR
     alpha = np.deg2rad(35)
     pcs = np.linspace(0, 2*np.pi, npcs, endpoint=False)
     #pcs = np.linspace(-2*np.pi, 2*np.pi, npcs, endpoint=False)
     #pcs = np.linspace(0, 4*np.pi, npcs, endpoint=False)
+
+    # Simple linear gradient off-resonance
+    maxTR = np.max(TRs)/20
+    minTR = np.min(TRs)/20
+    df_range = (-1/maxTR, 1/maxTR)
 
     # Get the actual off-resonance map
     coil_fm_gre = np.load('data/20190401_GASP_PHANTOM/coil_fm_gre.npy')
@@ -52,12 +57,21 @@ if __name__ == '__main__':
     PD = 0.000040 # Adjust max magnitute to match phantom 
     T1 = 100e-3
     T2 = 50e-3
-    PDs, T1s, T2s, _df = get_cylinder(width, df_range=None, radius=0.38, PD=PD, T1=T1, T2=T2)
+    PDs, T1s, T2s, _df = get_cylinder(width, df_range=df_range, radius=0.38, PD=PD, T1=T1, T2=T2)
     trim = int(width/4)
     PDs = PDs[trim:-trim, :]
     T1s = T1s[trim:-trim, :]
     T2s = T2s[trim:-trim, :]
+    _df = _df[trim:-trim, :]
+    _df = np.fliplr(_df)
     mask = T1s > 0
+
+    print(_df.shape, coil_fm_gre[0, ...].shape)
+    from skimage.restoration import unwrap_phase
+    TE1, TE2 = 2.87e-3, 5.74e-3
+    fac = np.abs(TE1 - TE2)*2*np.pi
+    # view(np.stack((_df*mask, coil_fm_gre[0, ...].T*mask)))
+    # view(np.stack((_df*mask, unwrap_phase(fac*coil_fm_gre[0, ...].T*mask)/fac)))
 
     # Generate complex coil sensitivities -- let's skip this for now
     # csm = generate_birdcage_sensitivities(width, number_of_coils=ncoils)
@@ -66,11 +80,19 @@ if __name__ == '__main__':
 
     # Acquire all pcs at all TRs for all coils
     I = np.zeros((ncoils, nTRs, npcs, height, width), dtype='complex')
+    I_comp = I.copy()
     for ii, TR in tqdm(enumerate(TRs), leave=False, total=len(TRs)):
         for cc in trange(ncoils, leave=False):
-            I[cc, ii, ...] = csm[cc, ...]*ssfp(
-                T1s, T2s, TR, alpha, coil_fm_gre[cc, ...].T*mask, pcs, PDs)
-            # view(I[cc, ii, ...])
+            I_comp[cc, ii, ...] = csm[cc, ...]*ssfp( T1s, T2s, TR, alpha, coil_fm_gre[cc, ...].T*mask, pcs, PDs)
+            # df0 = unwrap_phase(fac*coil_fm_gre[0, ...].T*mask)/fac
+            # I[cc, ii, ...] = csm[cc, ...]*ssfp( T1s, T2s, TR, alpha, df0, pcs, PDs)
+            I[cc, ii, ...] = csm[cc, ...]*ssfp( T1s, T2s, TR, alpha, _df, pcs, PDs)
+            print(np.stack((I[cc, ii, ...], I_comp[cc, ii, ...])).shape)
+            view(np.stack((I[cc, ii, ...], I_comp[cc, ii, ...], I[cc, ii, ...] - I_comp[cc, ii, ...])), fft_axes=(3, 4), montage_axis=0, movie_axis=1)
+
+            # Compensate for phase accrual during the TE
+            # I[cc, ii, ...] *= np.tile(np.exp(-2j * np.pi * coil_fm_gre[cc, ...].T * TR / 2), (npcs, 1, 1))
+            # I[cc, ii, ...] *= np.tile(np.exp(-2j * np.pi * _df * TR / 2), (npcs, 1, 1))
 
     # Combine TR/phase-cycle dimension
     I = I.reshape((ncoils, nTRs*npcs, height, width))

@@ -15,7 +15,7 @@ from gasp import gasp, triangle, triangle_periodic
 
 if __name__ == '__main__':
   
-  dataset = 2
+  dataset = 1
   t0 = time()
   data0 = np.load('data/20190401_GASP_PHANTOM/set%d_tr6_te3.npy' % dataset)
   data1 = np.load('data/20190401_GASP_PHANTOM/set%d_tr12_te6.npy' % dataset)
@@ -58,12 +58,8 @@ if __name__ == '__main__':
   Ic = np.zeros((ncoils, height, width), dtype='complex')
   for cc in trange(ncoils, leave=False):
     Ic[cc, ...] = gasp(data[cc, ...], D, C_dim, pc_dim=0)
-
-
-
-
-  # Ic = np.sqrt(np.sum(np.abs(Ic)**2, axis=0))
-  Ic = np.abs(Ic[2, ...])
+  Ic = np.sqrt(np.sum(np.abs(Ic)**2, axis=0))
+  # Ic = np.abs(Ic[2, ...])
 
   plt.subplot(1, 3, 1)
   plt.imshow(np.sqrt(np.sum(abs(data[:, 0, ...])**2, axis=0)))
