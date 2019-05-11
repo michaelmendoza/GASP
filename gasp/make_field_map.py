@@ -1,7 +1,9 @@
 import numpy as np
-from mr_utils.recon.field_map import dual_echo_gre
+from ismrmrdtools.coils import (
+    calculate_csm_inati_iter, calculate_csm_walsh)
+
 from mr_utils import view
-from ismrmrdtools.coils import calculate_csm_inati_iter, calculate_csm_walsh
+from mr_utils.recon.field_map import dual_echo_gre
 
 if __name__ == '__main__':
 

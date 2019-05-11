@@ -2,7 +2,8 @@
 
 import numpy as np
 
-def get_cylinder(N, df_range=None, radius=None, PD=1, T1=1.2, T2=.035):
+def get_cylinder(N, df_range=None, radius=None, PD=1, T1=1.2,
+                 T2=.035):
     '''Axial slice of cylindrical phantom.
 
     Parameters
@@ -19,7 +20,7 @@ def get_cylinder(N, df_range=None, radius=None, PD=1, T1=1.2, T2=.035):
         T1 value in seconds
     T2 : float, optional
         T2 value in seconds
-    
+
     Returns
     -------
     PDs : array_like

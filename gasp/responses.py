@@ -1,6 +1,9 @@
+'''Forcing functions to use with GASP.'''
+
 import math
+
 import numpy as np
-from scipy.signal import triang
+from scipy.signal import triang #pylint: disable=E0611
 
 def triangle(x0, bw):
     '''Spatial forcing function.
@@ -30,7 +33,7 @@ def triangle(x0, bw):
     return out/np.max(np.abs(out))
 
 def triangle_periodic(img_width, period, offset, bw):
-    '''Spatial forcing function - Periodic Triangle with bandwidth (bw)
+    '''Spatial forcing function - Periodic Triangle with bandwidth
 
     Parameters
     ----------
@@ -41,12 +44,14 @@ def triangle_periodic(img_width, period, offset, bw):
     offset: int
         Offset in pixels (i.e. cyclic shift)
     bw : float
-        Bandwidth (width in pixel from base of triangle) of forcing function 
+        Bandwidth (width in pixel from base of triangle) of forcing
+        function
 
     Returns
     -------
     g(x) : complex
-        Desired spatial response of uniform phantom with periodic off resonance 
+        Desired spatial response of uniform phantom with periodic off
+        resonance
     '''
 
     bw = round(bw)

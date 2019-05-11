@@ -1,9 +1,9 @@
 '''GASP module.'''
 
 import numpy as np
-from mr_utils import view
+# from mr_utils import view
 
-def gasp(I, D, C_dim, pc_dim=0 ):
+def gasp(I, D, C_dim, pc_dim=0):
     '''Generation of Arbitrary Spectral Profiles.
 
     Parameters
@@ -13,7 +13,7 @@ def gasp(I, D, C_dim, pc_dim=0 ):
     D : array_like
         Vector of samples of desired spectral profile.
     C_dim: tuple
-        Calibration box dimensions in number of pixels 
+        Calibration box dimensions in number of pixels.
     pc_dim : int, optional
         Axis containing phase-cycles.
 
