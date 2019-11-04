@@ -13,8 +13,8 @@ coils.
 import sys
 
 import numpy as np
-# import matplotlib.pyplot as plt
-from mr_utils.sim.ssfp import ssfp
+# import matplotlib.pyplot as pl
+from ssfp import bssfp as ssfp
 
 sys.path.insert(0, './')
 from gasp import get_cylinder #pylint: disable=C0413
