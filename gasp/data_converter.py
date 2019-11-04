@@ -2,6 +2,7 @@
 
 from glob import glob
 from os.path import isfile
+from time import time
 
 import numpy as np
 from rawdatarinator.raw import raw
@@ -31,3 +32,32 @@ def convert_to_npy(foldername, regex='/meas_*.dat'):
                 data, axes=(0, 1)), axes=(0, 1)), axes=(0, 1))
             np.save(new_filename, data)
             print('Done with %s' % f)
+
+
+def average_and_concate_data(path): 
+    new_filename = path + '/gasp_data.npy';
+    print(new_filename)
+    dataset = 1
+    TEs = [12, 24, 48]
+
+    data = []
+    t0 = time()
+    print('Loading Data ...')
+    for ii, te in enumerate(TEs):
+        data.append(np.load('%s/set%d_tr%d_te%d.npy' % (
+            path, dataset, te*2, te))[..., None])
+    data = np.concatenate(data, axis=-1)
+
+    print('Data loaded in ' + str(time() - t0) + ' secs')
+    print(data.shape) # [Height, Width, Coil, Avg, PCs, TRs]
+    
+    # Collapse the averages dimension
+    data = np.mean(data, axis=3) # [Height, Width, Coil, PCs, TRs]
+    print(data.shape) 
+
+    np.save(new_filename, data)
+    print('Done with %s' % new_filename)
+
+if __name__ == '__main__':
+  #convert_to_npy("/Volumes/NO NAME/Data/GASP/20190507_GASP_LONG_TR_WATER")
+  average_and_concate_data("/Volumes/NO NAME/Data/GASP/20190507_GASP_LONG_TR_WATER") 

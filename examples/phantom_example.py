@@ -1,6 +1,7 @@
 
 import os
 import sys
+sys.path.insert(0, './')
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -13,18 +14,17 @@ from time import time
 
 from gasp import gasp, triangle, triangle_periodic
 
-if os.name == 'nt':
-    sys.path.insert(0, './')
-
 if __name__ == '__main__':
 
     # path = 'data/20190401_GASP_PHANTOM'
     # dataset = 1
     # TEs = [3, 6, 12]
 
-    path = 'data/20190507_GASP_LONG_TR_WATER'
+    path = '/Volumes/NO NAME/Data/GASP/20190507_GASP_LONG_TR_WATER' # 'data/20190507_GASP_LONG_TR_WATER'
     dataset = 1
     TEs = [12, 24, 48]
+
+    print('Starting phantom experiment ...')
 
     data = []
     t0 = time()
@@ -32,9 +32,9 @@ if __name__ == '__main__':
         data.append(np.load('%s/set%d_tr%d_te%d.npy' % (
             path, dataset, te*2, te))[..., None])
     data = np.concatenate(data, axis=-1)
-    print(time() - t0)
-    print(data[0].shape) # [Height, Width, Coil, Avg, PCs]
-
+    print('Data loaded in ' + (time() - t0) + ' secs')
+    print(data.shape) # [Height, Width, Coil, Avg, PCs, TRs]
+    
     # Collapse the averages dimension
     data = np.mean(data, axis=3) # [Height, Width, Coil, PCs, TRs]
 
@@ -44,24 +44,18 @@ if __name__ == '__main__':
     mask = np.abs(band_free) > thresh
 
     # Apply mask to data
-    mask0 = np.tile(
-        mask,
-        (data.shape[2:] + (1, 1,))).transpose((3, 4, 0, 1, 2))
-    data = data*mask0
-
+    mask0 = np.tile(mask, (data.shape[2:] + (1, 1,))).transpose((3, 4, 0, 1, 2))
+    data = data * mask0
+    
     print(data.shape[:-2])
-    data = np.reshape(data, data.shape[:-2] + (-1,))
-    # [Height, Width, Coil, PCs x TRs]
-    data = np.moveaxis(data, 2, 0)
-    # [Coil, Height, Width, PCs x TRs]
-    data = data.transpose((0, 3, 2, 1))
-    # [Coil,  PCs x TRs, Width,   Height]
+    data = np.reshape(data, data.shape[:-2] + (-1,))    # [Height, Width, Coil, PCs x TRs]
+    data = np.moveaxis(data, 2, 0)                      # [Coil, Height, Width, PCs x TRs]
+    data = data.transpose((0, 3, 2, 1))                 # [Coil,  PCs x TRs, Width,   Height]
 
     # Get new dimensions
     ncoils, npcs, height, width = data.shape[:]
 
-    # Calibration box - (# Number of lines of calibration, Pixels on
-    # signal)
+    # Calibration box - (# Number of lines of calibration, Pixels on signal)
     C_dim = (32, width)
 
     #D = triangle(np.linspace(-100, 100, height), bw=10)
