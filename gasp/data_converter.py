@@ -29,6 +29,7 @@ def convert_to_npy(foldername, regex='/meas_*.dat'):
             data = twixread(f, A=True).squeeze()
             data = np.fft.fftshift(np.fft.ifft2(np.fft.fftshift(
                 data, axes=(0, 1)), axes=(0, 1)), axes=(0, 1))
+            data = _data.transpose((0, 1, 2, 4, 3))  
             np.save(new_filename, data)
             print('Done with %s' % f)
 
@@ -53,8 +54,9 @@ def data_preprocessing(path, TEs = [12, 24, 48], regex='/meas_*.dat'):
         _data = twixread(f, A=True).squeeze()
         _data = np.fft.fftshift(np.fft.ifft2(np.fft.fftshift(
                 _data, axes=(0, 1)), axes=(0, 1)), axes=(0, 1))
+        _data = _data.transpose((0, 1, 2, 4, 3)) 
         data.append(_data[..., None])
-    
+        
     data = np.concatenate(data, axis=-1)
     print('Data loaded in ' + str(time() - t0) + ' secs')
     print(data.shape) # [Height, Width, Coil, Avg, PCs, TRs]

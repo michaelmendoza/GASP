@@ -26,9 +26,9 @@ def examine_phantom(path, TEs=[12, 24, 48]):
 
     print('Starting Processing ...')
     print('Data shape: ' + str(data.shape))
-    
-def water_phantom(path, TEs=[12, 24, 48]):
 
+def water_phantom(path, TEs=[12, 24, 48]):
+    
     if not os.path.exists(path + '/gasp_data.npy'):
         data = data_preprocessing(path)
     else:
@@ -46,19 +46,23 @@ def water_phantom(path, TEs=[12, 24, 48]):
     mask0 = np.tile(mask, (data.shape[2:] + (1, 1,))).transpose((3, 4, 0, 1, 2))
     data = data * mask0
     
-    # Reshape data   
+    print(data.shape[:-2])
     data = np.reshape(data, data.shape[:-2] + (-1,))    # [Height, Width, Coil, PCs x TRs]
     data = np.moveaxis(data, 2, 0)                      # [Coil, Height, Width, PCs x TRs]
-    data = data.transpose((0, 3, 2, 1))                 # [Coil, PCs x TRs, Width, Height]
+    data = data.transpose((0, 3, 2, 1))                 # [Coil,  PCs x TRs, Width,   Height]
 
     # Get new dimensions
     ncoils, npcs, height, width = data.shape[:]
 
     # Calibration box - (# Number of lines of calibration, Pixels on signal)
     C_dim = (32, width)
+
+    #D = triangle(np.linspace(-100, 100, height), bw=10)
+    #D = triangle_periodic(height, 32, 0, 16)
+    #D = triangle_periodic(height, 76, 0, 38)
     D = triangle_periodic(width, 76, 18, 38)
     D *= mask.T[int(height/2), :]
-
+    #D = np.roll(D, int(height/9))
     plt.plot(D)
     plt.show()
 
@@ -66,7 +70,7 @@ def water_phantom(path, TEs=[12, 24, 48]):
     for cc in trange(ncoils, leave=False):
         Ic[cc, ...] = gasp(data[cc, ...], D, C_dim, pc_dim=0)
     Ic = np.sqrt(np.sum(np.abs(Ic)**2, axis=0))
-    #Ic = np.abs(Ic[2, ...])
+    # Ic = np.abs(Ic[2, ...])
 
     plt.subplot(1, 3, 1)
     plt.imshow(np.sqrt(np.sum(abs(data[:, 0, ...])**2, axis=0)))
@@ -80,6 +84,7 @@ def water_phantom(path, TEs=[12, 24, 48]):
     plt.legend()
     plt.title('Center horizontal slice\'s spatial response profile')
     plt.show()
+
 
 if __name__ == '__main__':
     water_phantom('/Volumes/NO NAME/Data/GASP/20190507_GASP_LONG_TR_WATER')
