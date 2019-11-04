@@ -19,11 +19,11 @@ sys.path.insert(0, './')
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import animation
-from ismrmrdtools.simulation import generate_birdcage_sensitivities
-from mr_utils.sim.ssfp import ssfp
+from ssfp import bssfp as ssfp
 from tqdm import trange
 
 from gasp import gasp, get_cylinder, triangle_periodic as g
+from gasp import generate_birdcage_sensitivities
 
 if __name__ == '__main__':
 
@@ -35,7 +35,7 @@ if __name__ == '__main__':
     N = 128 # matrix size NxN
     C_dim = (2, N) # Calibration box - (# Number of lines of calibration, Pixels on signal)
     period = N / 2 # Period for forcing function
-    bw = period / 2 # BW of forcing function 
+    bw = period / 2 # BW of forcing function
 
     # Experiment parameters
     TRs = np.linspace(TR_lo, TR_hi, nTRs) # Optimize these!
@@ -50,10 +50,11 @@ if __name__ == '__main__':
     df_range = (-1/maxTR, 1/maxTR)
 
     # Get a numerical phantom
-    PD = 0.000040 # Adjust max magnitute to match phantom 
+    PD = 0.000040 # Adjust max magnitute to match phantom
     T1 = 100e-3
     T2 = 50e-3
-    PDs, T1s, T2s, df = get_cylinder(N, df_range=df_range, radius=0.99, PD=PD, T1=T1, T2=T2)
+    PDs, T1s, T2s, df = get_cylinder(
+        N, df_range=df_range, radius=0.99, PD=PD, T1=T1, T2=T2)
 
     # Generate complex coil sensitivities
     csm = generate_birdcage_sensitivities(N, number_of_coils=ncoils)
@@ -73,9 +74,9 @@ if __name__ == '__main__':
             I[cc, ii, ...] = Imag*np.exp(1j*Iphase)'''
 
     I0 = I[0, 0, :, int(N/2), int(N/2-60)]
-    plt.subplot(2,1,1)
+    plt.subplot(2, 1, 1)
     plt.plot(np.abs(I0))
-    plt.subplot(2,1,2)
+    plt.subplot(2, 1, 2)
     plt.plot(np.angle(I0))
     plt.show()
 
@@ -90,7 +91,7 @@ if __name__ == '__main__':
         '''Run plot update.'''
 
         # Construct the shifted spatial forcing function
-        _D = g(N, period, frame, bw) 
+        _D = g(N, period, frame, bw)
 
         # GASP for each coil
         Ic = np.zeros((ncoils, N, N), dtype='complex')

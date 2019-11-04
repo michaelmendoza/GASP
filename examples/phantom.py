@@ -82,6 +82,6 @@ def water_phantom(path, TEs=[12, 24, 48]):
     plt.show()
 
 if __name__ == '__main__':
-    examine_phantom('/Volumes/NO NAME/Data/GASP/20190507_GASP_LONG_TR_WATER')
+    water_phantom('/Volumes/NO NAME/Data/GASP/20190507_GASP_LONG_TR_WATER')
 
 
