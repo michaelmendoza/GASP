@@ -5,7 +5,7 @@ from os.path import isfile
 from time import time
 
 import numpy as np
-from rawdatarinator.raw import raw
+from rawdatarinator import twixread
 
 def convert_to_npy(foldername, regex='/meas_*.dat'):
     '''Convert all raw data files in a folder.
@@ -27,15 +27,16 @@ def convert_to_npy(foldername, regex='/meas_*.dat'):
     for f in files:
         new_filename = '%s.npy' % f
         if not isfile(new_filename):
-            data = raw(f)['kSpace']
+            # data = raw(f)['kSpace']
+            data = twixread(f, A=True).squeeze()
             data = np.fft.fftshift(np.fft.ifft2(np.fft.fftshift(
                 data, axes=(0, 1)), axes=(0, 1)), axes=(0, 1))
             np.save(new_filename, data)
             print('Done with %s' % f)
 
 
-def average_and_concate_data(path): 
-    new_filename = path + '/gasp_data.npy';
+def average_and_concate_data(path):
+    new_filename = path + '/gasp_data.npy'
     print(new_filename)
     dataset = 1
     TEs = [12, 24, 48]
@@ -50,14 +51,19 @@ def average_and_concate_data(path):
 
     print('Data loaded in ' + str(time() - t0) + ' secs')
     print(data.shape) # [Height, Width, Coil, Avg, PCs, TRs]
-    
+
     # Collapse the averages dimension
     data = np.mean(data, axis=3) # [Height, Width, Coil, PCs, TRs]
-    print(data.shape) 
+    print(data.shape)
 
     np.save(new_filename, data)
     print('Done with %s' % new_filename)
 
 if __name__ == '__main__':
   #convert_to_npy("/Volumes/NO NAME/Data/GASP/20190507_GASP_LONG_TR_WATER")
-  average_and_concate_data("/Volumes/NO NAME/Data/GASP/20190507_GASP_LONG_TR_WATER") 
+  # average_and_concate_data("/Volumes/NO NAME/Data/GASP/20190507_GASP_LONG_TR_WATER")
+
+  # Test new rawdatarinator
+  # convert_to_npy('data/20190401_GASP_PHANTOM/')
+  # data = np.load('data/20190401_GASP_PHANTOM/meas_MID48_TRUFI_NBPM_2019_02_27_FID41503.dat.npy')
+  # print(data.shape)
