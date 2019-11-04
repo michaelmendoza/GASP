@@ -9,9 +9,7 @@ import sys
 
 import numpy as np
 import matplotlib.pyplot as plt
-
-from mr_utils.sim.ssfp import ssfp
-from mr_utils.recon.ssfp import gs_recon
+from ssfp import gs_recon, bssfp as ssfp
 
 sys.path.insert(0, './')
 from gasp import gasp #pylint: disable=C0413
@@ -117,7 +115,7 @@ if __name__ == '__main__':
     plt.show()
 
     # Do the thing!
-    I0 = gasp(I, box)
+    I0 = gasp(I, box, C_dim=(int(N/2), int(N/2)))
     print(I.shape, I0.shape)
 
     # Find the 0, 90, 180, 270 phase-cycles to do GS recon on
