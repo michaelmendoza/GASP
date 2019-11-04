@@ -7,17 +7,17 @@ from mr_utils.recon.field_map import dual_echo_gre
 
 if __name__ == '__main__':
 
-  im0 = np.load('data/20190401_GASP_PHANTOM/set2_gre_tr34_te2_87.npy')
+  im0 = np.load("/Volumes/NO NAME/Data/GASP/20190401_GASP_PHANTOM/meas_MID57_gre_TR34_TE2_87_FID41512.dat.npy")
   im0 = np.mean(im0, axis=2)
   im0 = np.moveaxis(im0, -1, 0)
 
-  im1 = np.load('data/20190401_GASP_PHANTOM/set2_gre_tr4_te5_74.npy')
+  im1 = np.load("/Volumes/NO NAME/Data/GASP/20190401_GASP_PHANTOM/meas_MID58_gre_TR34_TE5_74_FID41513.dat.npy")
   im1 = np.mean(im1, axis=2)
   im1 = np.moveaxis(im1, -1, 0)
 
   # Make a field map coil by coil
   fm0 = dual_echo_gre(im0, im1, 2.87e-3, 5.74e-3)
-  np.save('data/20190401_GASP_PHANTOM/coil_fm_gre.npy', fm0)
+  np.save("/Volumes/NO NAME/Data/GASP/20190401_GASP_PHANTOM/coil_fm_gre.npy", fm0)
   view(fm0)
   fm0 = np.mean(fm0, axis=0)
 

@@ -33,31 +33,48 @@ def convert_to_npy(foldername, regex='/meas_*.dat'):
             np.save(new_filename, data)
             print('Done with %s' % f)
 
+def data_preprocessing(path, TEs = [12, 24, 48], regex='/meas_*.dat'):
+    '''Converts raw data to preprocessed data file. 
 
-def average_and_concate_data(path): 
-    new_filename = path + '/gasp_data.npy';
-    print(new_filename)
-    dataset = 1
-    TEs = [12, 24, 48]
+    This loads module loads data, computes iFFT, stacks data, and removes 
+    averages.
+    '''
 
-    data = []
+    print('PreProcessing Starting: ')
+    files = glob(path + regex)
+
+    # Load data, compute iFFT, and stack data 
     t0 = time()
-    print('Loading Data ...')
+    data = []
     for ii, te in enumerate(TEs):
-        data.append(np.load('%s/set%d_tr%d_te%d.npy' % (
-            path, dataset, te*2, te))[..., None])
-    data = np.concatenate(data, axis=-1)
+        f = files[ii]
 
+        print('Loading and PreProcessing: TE = ' + str(te) + ' Path:' + f)
+
+        _data = raw(f)['kSpace']
+        _data = np.fft.fftshift(np.fft.ifft2(np.fft.fftshift(
+                _data, axes=(0, 1)), axes=(0, 1)), axes=(0, 1))
+        data.append(_data[..., None])
+    
+    data = np.concatenate(data, axis=-1)
     print('Data loaded in ' + str(time() - t0) + ' secs')
     print(data.shape) # [Height, Width, Coil, Avg, PCs, TRs]
     
     # Collapse the averages dimension
+    print('PreProcessing: Averaging')
     data = np.mean(data, axis=3) # [Height, Width, Coil, PCs, TRs]
     print(data.shape) 
 
+    # Save PreProcessed data to Savefile 
+    new_filename = path + '/gasp_data.npy';
+    print('Saving PreProcessed Data file')
     np.save(new_filename, data)
-    print('Done with %s' % new_filename)
+    print('PreProcessing Complete with %s' % new_filename)
+
+    return data
 
 if __name__ == '__main__':
   #convert_to_npy("/Volumes/NO NAME/Data/GASP/20190507_GASP_LONG_TR_WATER")
-  average_and_concate_data("/Volumes/NO NAME/Data/GASP/20190507_GASP_LONG_TR_WATER") 
+  #average_and_concate_data("/Volumes/NO NAME/Data/GASP/20190507_GASP_LONG_TR_WATER") 
+  #convert_to_npy("/Volumes/NO NAME/Data/GASP/20190401_GASP_PHANTOM")
+  pass
