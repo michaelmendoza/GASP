@@ -19,9 +19,10 @@ sys.path.insert(0, './')
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import animation
-from ismrmrdtools.simulation import generate_birdcage_sensitivities
-from mr_utils.sim.ssfp import ssfp
-from mr_utils import view
+# from ismrmrdtools.simulation import generate_birdcage_sensitivities
+# from mr_utils.sim.ssfp import ssfp
+from ssfp import bssfp as ssfp
+# from mr_utils import view
 from tqdm import trange, tqdm
 
 from gasp import gasp, get_cylinder, triangle_periodic as g
@@ -54,7 +55,7 @@ if __name__ == '__main__':
     coil_fm_gre = np.load('data/20190401_GASP_PHANTOM/coil_fm_gre.npy')
 
     # Get a numerical phantom
-    PD = 0.000040 # Adjust max magnitute to match phantom 
+    PD = 0.000040 # Adjust max magnitute to match phantom
     T1 = 100e-3
     T2 = 50e-3
     PDs, T1s, T2s, _df = get_cylinder(width, df_range=df_range, radius=0.38, PD=PD, T1=T1, T2=T2)
@@ -67,7 +68,7 @@ if __name__ == '__main__':
     mask = T1s > 0
 
     print(_df.shape, coil_fm_gre[0, ...].shape)
-    from skimage.restoration import unwrap_phase
+    # from skimage.restoration import unwrap_phase
     TE1, TE2 = 2.87e-3, 5.74e-3
     fac = np.abs(TE1 - TE2)*2*np.pi
     # view(np.stack((_df*mask, coil_fm_gre[0, ...].T*mask)))
@@ -83,12 +84,12 @@ if __name__ == '__main__':
     I_comp = I.copy()
     for ii, TR in tqdm(enumerate(TRs), leave=False, total=len(TRs)):
         for cc in trange(ncoils, leave=False):
-            I_comp[cc, ii, ...] = csm[cc, ...]*ssfp( T1s, T2s, TR, alpha, coil_fm_gre[cc, ...].T*mask, pcs, PDs)
+            I_comp[cc, ii, ...] = csm[cc, ...]*ssfp(T1s, T2s, TR, alpha, coil_fm_gre[cc, ...].T*mask, pcs, PDs)
             # df0 = unwrap_phase(fac*coil_fm_gre[0, ...].T*mask)/fac
             # I[cc, ii, ...] = csm[cc, ...]*ssfp( T1s, T2s, TR, alpha, df0, pcs, PDs)
             I[cc, ii, ...] = csm[cc, ...]*ssfp( T1s, T2s, TR, alpha, _df, pcs, PDs)
-            print(np.stack((I[cc, ii, ...], I_comp[cc, ii, ...])).shape)
-            view(np.stack((I[cc, ii, ...], I_comp[cc, ii, ...], I[cc, ii, ...] - I_comp[cc, ii, ...])), fft_axes=(3, 4), montage_axis=0, movie_axis=1)
+            # print(np.stack((I[cc, ii, ...], I_comp[cc, ii, ...])).shape)
+            # view(np.stack((I[cc, ii, ...], I_comp[cc, ii, ...], I[cc, ii, ...] - I_comp[cc, ii, ...])), fft_axes=(3, 4), montage_axis=0, movie_axis=1)
 
             # Compensate for phase accrual during the TE
             # I[cc, ii, ...] *= np.tile(np.exp(-2j * np.pi * coil_fm_gre[cc, ...].T * TR / 2), (npcs, 1, 1))
