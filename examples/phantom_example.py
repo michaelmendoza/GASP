@@ -1,28 +1,29 @@
 
 import os
+from time import time
 import sys
 sys.path.insert(0, './')
 
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import animation
-from mr_utils import view
-from mr_utils.recon.ssfp import gs_recon
+# from mr_utils import view
+# from mr_utils.recon.ssfp import gs_recon
+from ssfp import gs_recon
 from tqdm import trange
 from skimage.filters import threshold_li
-from time import time
 
 from gasp import gasp, triangle, triangle_periodic
 
 if __name__ == '__main__':
 
-    # path = 'data/20190401_GASP_PHANTOM'
-    # dataset = 1
-    # TEs = [3, 6, 12]
-
-    path = '/Volumes/NO NAME/Data/GASP/20190507_GASP_LONG_TR_WATER' # 'data/20190507_GASP_LONG_TR_WATER'
+    path = 'data/20190401_GASP_PHANTOM'
     dataset = 1
-    TEs = [12, 24, 48]
+    TEs = [3, 6, 12]
+
+    # path = '/Volumes/NO NAME/Data/GASP/20190507_GASP_LONG_TR_WATER' # 'data/20190507_GASP_LONG_TR_WATER'
+    # dataset = 1
+    # TEs = [12, 24, 48]
 
     print('Starting phantom experiment ...')
 
@@ -32,9 +33,9 @@ if __name__ == '__main__':
         data.append(np.load('%s/set%d_tr%d_te%d.npy' % (
             path, dataset, te*2, te))[..., None])
     data = np.concatenate(data, axis=-1)
-    print('Data loaded in ' + (time() - t0) + ' secs')
+    print('Data loaded in %g secs' % (time() - t0))
     print(data.shape) # [Height, Width, Coil, Avg, PCs, TRs]
-    
+
     # Collapse the averages dimension
     data = np.mean(data, axis=3) # [Height, Width, Coil, PCs, TRs]
 
@@ -44,9 +45,10 @@ if __name__ == '__main__':
     mask = np.abs(band_free) > thresh
 
     # Apply mask to data
-    mask0 = np.tile(mask, (data.shape[2:] + (1, 1,))).transpose((3, 4, 0, 1, 2))
+    mask0 = np.tile(
+        mask, (data.shape[2:] + (1, 1,))).transpose((3, 4, 0, 1, 2))
     data = data * mask0
-    
+
     print(data.shape[:-2])
     data = np.reshape(data, data.shape[:-2] + (-1,))    # [Height, Width, Coil, PCs x TRs]
     data = np.moveaxis(data, 2, 0)                      # [Coil, Height, Width, PCs x TRs]
