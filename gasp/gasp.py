@@ -23,6 +23,30 @@ def gasp(I, D, C_dim, pc_dim=0):
         Combined image with spatial response approximating D.
     '''
 
+    out, An = gasp_coefficents(I, D, C_dim, pc_dim)
+
+    return out
+
+def gasp_coefficents(I, D, C_dim, pc_dim=0):
+    '''Generation of Arbitrary Spectral Profiles.
+
+    Parameters
+    ----------
+    I : array_like
+        Array of phase-cycled images.
+    D : array_like
+        Vector of samples of desired spectral profile.
+    C_dim: tuple
+        Calibration box dimensions in number of pixels.
+    pc_dim : int, optional
+        Axis containing phase-cycles.
+
+    Returns
+    -------
+    I0 : array_like
+        Combined image with spatial response approximating D.
+    '''
+
     # Let's put the phase-cycle dimension last
     I = np.moveaxis(I, pc_dim, -1)
     I0 = I.copy()
@@ -51,7 +75,7 @@ def gasp(I, D, C_dim, pc_dim=0):
 
     out = I0.dot(x).reshape(xx, yy)
 
-    return out#, x
+    return out, x
 
 def apply_gasp(I, An):
     I = np.squeeze(I).transpose(1,2,0)

@@ -15,7 +15,7 @@ from mr_utils.sim.ssfp import ssfp
 from mr_utils.recon.ssfp import gs_recon
 from mr_utils import view
 
-from gasp import gasp, apply_gasp, triangle, triangle_periodic
+from gasp import gasp, gasp_coefficents, apply_gasp, triangle, triangle_periodic
 
 def mesh( height = 256, width = 512, matIdx = [1, 0] ):
 
@@ -118,7 +118,7 @@ def gasp_coeff_phantom( height=256,
     M = ssfp_phantom( height, width, nPC, nC )
     D = triangle_periodic(width, 76, 18, 38)
     C_dim = (2, width)
-    I, An = gasp(M[0, ...], D, C_dim, pc_dim=0)
+    I, An = gasp_coefficents(M[0, ...], D, C_dim, pc_dim=0)
 
     '''
     plt.plot(np.abs(I[int(height/2), :]), label='Simulated Profile')
