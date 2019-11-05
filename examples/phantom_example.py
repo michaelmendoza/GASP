@@ -43,7 +43,7 @@ if __name__ == '__main__':
     band_free = gs_recon(data[:, :, 0, ::4, 0], pc_axis=-1)
     thresh = threshold_li(np.abs(band_free))
     mask = np.abs(band_free) > thresh
-
+    
     # Apply mask to data
     mask0 = np.tile(
         mask, (data.shape[2:] + (1, 1,))).transpose((3, 4, 0, 1, 2))

@@ -15,9 +15,9 @@ from mr_utils.sim.ssfp import ssfp
 from mr_utils.recon.ssfp import gs_recon
 from mr_utils import view
 
-from gasp import gasp, triangle, triangle_periodic
+from gasp import gasp, apply_gasp, triangle, triangle_periodic
 
-def mesh( height = 256, width = 512, isSingleMaterial = True ):
+def mesh( height = 256, width = 512, matIdx = [1, 0] ):
 
     # Material properties 
     PD = 1.0
@@ -26,7 +26,7 @@ def mesh( height = 256, width = 512, isSingleMaterial = True ):
     f0a = 0
     T1b = 270e-3
     T2b = 85e-3
-    f0b = -428e0 # -428 Hz @ 3T
+    f0b = 0 # -428 Hz @ 3T
 
     # Find indices 
     x = np.linspace(-1, 1, width)
@@ -40,13 +40,19 @@ def mesh( height = 256, width = 512, isSingleMaterial = True ):
     T2s = np.zeros(dims)
     F0 = np.zeros(dims)
 
-    if isSingleMaterial:
+    if matIdx == [1, 0]:
         idx = X > -1
         PDs[idx] = PD
         T1s[idx] = T1a
         T2s[idx] = T2a  
         F0[idx] = f0a
-    else:
+    elif matIdx == [0, 1]:
+        idx = X > -1
+        PDs[idx] = PD
+        T1s[idx] = T1b
+        T2s[idx] = T2b
+        F0[idx] = f0b   
+    elif matIdx == [1, 1]:
         idx = X < 0
         PDs[idx] = PD
         T1s[idx] = T1a
@@ -64,16 +70,17 @@ def ssfp_phantom( height=256,
                   width=512, 
                   nPC = 16, 
                   nC = 1,
-                  TEs=[12e-3, 24e-3, 48e-3],
-                  alpha = np.deg2rad(45),
-                  fieldGradDir = 1):
+                  TEs=[3e-3, 6e-3, 12e-3], #[12e-3, 24e-3, 48e-3],
+                  alpha = np.deg2rad(35),
+                  fieldGradDir = 1,
+                  matIdx = [1, 0]):
     
     # Calculate simulation values
     TRs = np.array(TEs) * 2.0;
     PCs = np.linspace(0, 2*np.pi, nPC, endpoint=False)
     
     # Get material properties
-    m = mesh(height, width);
+    m = mesh(height, width, matIdx);
     df_factor = 2;
     df_range = (-df_factor/np.max(TRs), df_factor/np.max(TRs))
 
@@ -103,7 +110,7 @@ def ssfp_phantom( height=256,
 
     return M
 
-def simulation_phantom( height=256, 
+def gasp_coeff_phantom( height=256, 
                         width=512, 
                         nPC = 16, 
                         nC = 1 ):
@@ -111,7 +118,26 @@ def simulation_phantom( height=256,
     M = ssfp_phantom( height, width, nPC, nC )
     D = triangle_periodic(width, 76, 18, 38)
     C_dim = (2, width)
-    I = gasp(M[0, ...], D, C_dim, pc_dim=0)
+    I, An = gasp(M[0, ...], D, C_dim, pc_dim=0)
+
+    '''
+    plt.plot(np.abs(I[int(height/2), :]), label='Simulated Profile')
+    plt.plot(D, '--', label='Desired Profile')
+    plt.legend()
+    plt.title('Center horizontal slice\'s spatial response profile')
+    plt.show()
+    '''
+
+    return An, D
+
+def simulation_phantom(height=256, 
+                        width=512, 
+                        nPC = 16, 
+                        nC = 1):
+    
+    An, D = gasp_coeff_phantom( height, width, nPC, nC )
+    M = ssfp_phantom(height, width, nPC, nC, matIdx = [1, 1])
+    I = apply_gasp(M, An) 
 
     plt.plot(np.abs(I[int(height/2), :]), label='Simulated Profile')
     plt.plot(D, '--', label='Desired Profile')

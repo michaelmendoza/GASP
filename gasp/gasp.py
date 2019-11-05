@@ -51,8 +51,12 @@ def gasp(I, D, C_dim, pc_dim=0):
 
     out = I0.dot(x).reshape(xx, yy)
 
-    return out
+    return out#, x
 
+def apply_gasp(I, An):
+    I = np.squeeze(I).transpose(1,2,0)
+    xx, yy = I.shape[0], I.shape[1]
+    return I.dot(An).reshape(xx, yy)
 
 if __name__ == '__main__':
     pass
