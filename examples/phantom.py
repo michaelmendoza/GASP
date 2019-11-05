@@ -25,10 +25,22 @@ def examine_phantom(path, TEs=[12, 24, 48]):
         data = np.load(path + '/gasp_data.npy')
 
     print('Starting Processing ...')
-    print('Data shape: ' + str(data.shape))
+    print('Data shape: ' + str(data.shape)) # [Height, Width, Coil, PCs, TRs]
+
+    _ = np.sqrt(np.sum(np.abs(data)**2, axis=2))
+    _ = abs(_[:,:,0,2].T)
+    xx, yy = _.shape[:2]
+
+    #_ = abs(gs_recon(data[:, :, 0, ::4, 0], pc_axis=-1)).T
+
+    plt.subplot(1, 2, 1)
+    plt.imshow(_, cmap='gray')
+    plt.subplot(1, 2, 2)
+    plt.plot(_[int(xx/2), :])
+    plt.show()
 
 def water_phantom(path, TEs=[12, 24, 48]):
-    
+
     if not os.path.exists(path + '/gasp_data.npy'):
         data = data_preprocessing(path)
     else:
@@ -87,6 +99,7 @@ def water_phantom(path, TEs=[12, 24, 48]):
 
 
 if __name__ == '__main__':
-    water_phantom('/Volumes/NO NAME/Data/GASP/20190507_GASP_LONG_TR_WATER')
+    examine_phantom('/Volumes/NO NAME/Data/GASP/20190507_GASP_LONG_TR_WATER')
+    #water_phantom('/Volumes/NO NAME/Data/GASP/20190507_GASP_LONG_TR_WATER')
 
 

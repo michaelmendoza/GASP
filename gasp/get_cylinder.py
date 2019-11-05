@@ -38,8 +38,7 @@ def get_cylinder(N, df_range=None, radius=None, PD=1, T1=1.2,
         radius = 0.75
     else:
         assert 0 < radius < 1, 'Radius must be in (0, 1)!'
-
-
+    
     # Find indices of cylinder with given radius
     x = np.linspace(-1, 1, N)
     y = np.linspace(-1, 1, N)

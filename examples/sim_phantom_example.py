@@ -16,12 +16,15 @@ TODO
 import sys
 sys.path.insert(0, './')
 
+import logging
+logging.getLogger('matplotlib').setLevel(logging.ERROR)
+
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import animation
 # from ismrmrdtools.simulation import generate_birdcage_sensitivities
-# from mr_utils.sim.ssfp import ssfp
-from ssfp import bssfp as ssfp
+from mr_utils.sim.ssfp import ssfp
+#from ssfp import bssfp as ssfp
 # from mr_utils import view
 from tqdm import trange, tqdm
 
@@ -47,12 +50,14 @@ if __name__ == '__main__':
     #pcs = np.linspace(0, 4*np.pi, npcs, endpoint=False)
 
     # Simple linear gradient off-resonance
-    maxTR = np.max(TRs)/20
-    minTR = np.min(TRs)/20
-    df_range = (-1/maxTR, 1/maxTR)
+    df_factor = 4;
+    maxTR = np.max(TRs)
+    minTR = np.min(TRs)
+    df_range = (-df_factor/maxTR, df_factor/maxTR)
 
     # Get the actual off-resonance map
-    coil_fm_gre = np.load('data/20190401_GASP_PHANTOM/coil_fm_gre.npy')
+    #coil_fm_gre = np.load('data/20190401_GASP_PHANTOM/coil_fm_gre.npy')
+    coil_fm_gre = np.zeros((height, width))
 
     # Get a numerical phantom
     PD = 0.000040 # Adjust max magnitute to match phantom
@@ -84,6 +89,7 @@ if __name__ == '__main__':
     I_comp = I.copy()
     for ii, TR in tqdm(enumerate(TRs), leave=False, total=len(TRs)):
         for cc in trange(ncoils, leave=False):
+
             I_comp[cc, ii, ...] = csm[cc, ...]*ssfp(T1s, T2s, TR, alpha, coil_fm_gre[cc, ...].T*mask, pcs, PDs)
             # df0 = unwrap_phase(fac*coil_fm_gre[0, ...].T*mask)/fac
             # I[cc, ii, ...] = csm[cc, ...]*ssfp( T1s, T2s, TR, alpha, df0, pcs, PDs)
