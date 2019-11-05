@@ -68,7 +68,7 @@ if __name__ == '__main__':
     #D = np.roll(D, int(height/9))
     plt.plot(D)
     plt.show()
-
+    
     Ic = np.zeros((ncoils, height, width), dtype='complex')
     for cc in trange(ncoils, leave=False):
         Ic[cc, ...] = gasp(data[cc, ...], D, C_dim, pc_dim=0)

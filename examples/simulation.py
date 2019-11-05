@@ -15,12 +15,18 @@ from mr_utils.sim.ssfp import ssfp
 from mr_utils.recon.ssfp import gs_recon
 from mr_utils import view
 
-def mesh( height = 256, width = 512 ):
+from gasp import gasp, triangle, triangle_periodic
+
+def mesh( height = 256, width = 512, isSingleMaterial = True ):
 
     # Material properties 
-    PD = 1
-    T1 = 100e-3
-    T2 = 50e-3
+    PD = 1.0
+    T1a = 790e-3
+    T2a = 92e-3
+    f0a = 0
+    T1b = 270e-3
+    T2b = 85e-3
+    f0b = -428e0 # -428 Hz @ 3T
 
     # Find indices 
     x = np.linspace(-1, 1, width)
@@ -32,31 +38,56 @@ def mesh( height = 256, width = 512 ):
     PDs = np.zeros(dims)
     T1s = np.zeros(dims)
     T2s = np.zeros(dims)
-    idx = X + Y > -2
-    PDs[idx] = PD
-    T1s[idx] = T1
-    T2s[idx] = T2
+    F0 = np.zeros(dims)
 
-    return { 'dims':dims, 'T2': T2s, 'T1' : T1s, 'PD' : PDs }
+    if isSingleMaterial:
+        idx = X > -1
+        PDs[idx] = PD
+        T1s[idx] = T1a
+        T2s[idx] = T2a  
+        F0[idx] = f0a
+    else:
+        idx = X < 0
+        PDs[idx] = PD
+        T1s[idx] = T1a
+        T2s[idx] = T2a
+        F0[idx] = f0a
+        idx = X > 0
+        PDs[idx] = PD
+        T1s[idx] = T1b
+        T2s[idx] = T2b
+        F0[idx] = f0b  
 
-def simulation_phantom( height=256, 
-                        width=512, 
-                        nPC = 16, 
-                        nC = 1,
-                        TEs=[12e-3, 24e-3, 48e-3],
-                        alpha = np.deg2rad(10)):
+    return { 'dims':dims, 'T2': T2s, 'T1' : T1s, 'PD' : PDs, 'F0': F0 }
+
+def ssfp_phantom( height=256, 
+                  width=512, 
+                  nPC = 16, 
+                  nC = 1,
+                  TEs=[12e-3, 24e-3, 48e-3],
+                  alpha = np.deg2rad(45),
+                  fieldGradDir = 1):
     
     # Calculate simulation values
     TRs = np.array(TEs) * 2.0;
     PCs = np.linspace(0, 2*np.pi, nPC, endpoint=False)
     
-    # Get material properties and off-resonance values
+    # Get material properties
     m = mesh(height, width);
-    df_factor = 8;
+    df_factor = 2;
     df_range = (-df_factor/np.max(TRs), df_factor/np.max(TRs))
-    fx = np.linspace(df_range[0], df_range[1], width)
-    fy = np.zeros(height)
-    df, _ = np.meshgrid(fx, fy)
+
+    # Get off-resonance values
+    if(fieldGradDir):
+        fx = np.linspace(df_range[0], df_range[1], width)
+        fy = np.zeros(height)
+        dfx, dfy = np.meshgrid(fx, fy)
+        df = dfx + m['F0']
+    else:
+        fx = np.zeros(width)
+        fy = np.linspace(df_range[0], df_range[1], height)
+        dfx, dfy = np.meshgrid(fx, fy)
+        df = dfy + m['F0']
 
     # Simluate bSSFP for all coils and TRs and phase-cycles 
     M = np.zeros((nC, len(TRs), nPC, height, width), dtype='complex')
@@ -68,10 +99,27 @@ def simulation_phantom( height=256,
     M = M.reshape((nC, len(TRs)*nPC, height, width))
 
     plt.imshow(abs(M[0,0,:]))
-    plt.show()
+    plt.show() 
 
-    pass
+    return M
+
+def simulation_phantom( height=256, 
+                        width=512, 
+                        nPC = 16, 
+                        nC = 1 ):
+    
+    M = ssfp_phantom( height, width, nPC, nC )
+    D = triangle_periodic(width, 76, 18, 38)
+    C_dim = (2, width)
+    I = gasp(M[0, ...], D, C_dim, pc_dim=0)
+
+    plt.plot(np.abs(I[int(height/2), :]), label='Simulated Profile')
+    plt.plot(D, '--', label='Desired Profile')
+    plt.legend()
+    plt.title('Center horizontal slice\'s spatial response profile')
+    plt.show()
 
 if __name__ == '__main__':
     #mesh()
     simulation_phantom()
+

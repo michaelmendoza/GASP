@@ -56,15 +56,14 @@ def triangle_periodic(img_width, period, offset, bw):
 
     bw = round(bw)
     period = round(period)
-
     assert period >= bw
 
     window = triang(bw)
     window = np.concatenate((window, np.zeros(period - bw)))
     num_of_windows = math.ceil(img_width / period)
     response = np.tile(window, (num_of_windows))
-    response = response[:img_width]
     response = np.roll(response, offset)
+    response = response[:img_width]
     return response
 
 if __name__ == '__main__':
