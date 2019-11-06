@@ -59,7 +59,7 @@ if __name__ == '__main__':
 
     # Calibration box - (# Number of lines of calibration, Pixels on signal)
     C_dim = (32, width)
-
+    
     #D = triangle(np.linspace(-100, 100, height), bw=10)
     #D = triangle_periodic(height, 32, 0, 16)
     #D = triangle_periodic(height, 76, 0, 38)

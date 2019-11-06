@@ -17,7 +17,7 @@ from mr_utils import view
 
 from gasp import gasp, gasp_coefficents, apply_gasp, triangle, triangle_periodic
 
-def mesh( height = 256, width = 512, matIdx = [1, 0] ):
+def mesh( height = 256, width = 512, matIdx = 0 ):
 
     # Material properties 
     PD = 1.0
@@ -40,19 +40,19 @@ def mesh( height = 256, width = 512, matIdx = [1, 0] ):
     T2s = np.zeros(dims)
     F0 = np.zeros(dims)
 
-    if matIdx == [1, 0]:
+    if matIdx == 0:
         idx = X > -1
         PDs[idx] = PD
         T1s[idx] = T1a
         T2s[idx] = T2a  
         F0[idx] = f0a
-    elif matIdx == [0, 1]:
+    elif matIdx == 1:
         idx = X > -1
         PDs[idx] = PD
         T1s[idx] = T1b
         T2s[idx] = T2b
         F0[idx] = f0b   
-    elif matIdx == [1, 1]:
+    elif matIdx == 2:
         idx = X < 0
         PDs[idx] = PD
         T1s[idx] = T1a
@@ -63,6 +63,12 @@ def mesh( height = 256, width = 512, matIdx = [1, 0] ):
         T1s[idx] = T1b
         T2s[idx] = T2b
         F0[idx] = f0b  
+    elif matIdx == 3:
+        idx = abs(X) < 0.5
+        PDs[idx] = PD
+        T1s[idx] = T1a
+        T2s[idx] = T2a
+        F0[idx] = f0a
 
     return { 'dims':dims, 'T2': T2s, 'T1' : T1s, 'PD' : PDs, 'F0': F0 }
 
@@ -73,7 +79,7 @@ def ssfp_phantom( height=256,
                   TEs=[3e-3, 6e-3, 12e-3], #[12e-3, 24e-3, 48e-3],
                   alpha = np.deg2rad(35),
                   fieldGradDir = 1,
-                  matIdx = [1, 0]):
+                  matIdx = 0 ):
     
     # Calculate simulation values
     TRs = np.array(TEs) * 2.0;
@@ -105,20 +111,21 @@ def ssfp_phantom( height=256,
     # Combine TR/phase-cycle dimension
     M = M.reshape((nC, len(TRs)*nPC, height, width))
 
-    plt.imshow(abs(M[0,0,:]))
-    plt.show() 
+    #plt.imshow(abs(M[0,0,:]), cmap='gray')
+    #plt.show() 
 
     return M
 
 def gasp_coeff_phantom( height=256, 
                         width=512, 
                         nPC = 16, 
-                        nC = 1 ):
+                        nC = 1, 
+                        matIdx = 0 ):
     
-    M = ssfp_phantom( height, width, nPC, nC )
+    M = ssfp_phantom( height, width, nPC, nC, matIdx = 0 )
     D = triangle_periodic(width, 76, 18, 38)
     C_dim = (2, width)
-    I, An = gasp_coefficents(M[0, ...], D, C_dim, pc_dim=0)
+    I, An = gasp_coefficents(M[0, ...], D, C_dim, pc_dim = 0 )
 
     '''
     plt.plot(np.abs(I[int(height/2), :]), label='Simulated Profile')
@@ -132,13 +139,14 @@ def gasp_coeff_phantom( height=256,
 
 def simulation_phantom(height=256, 
                         width=512, 
-                        nPC = 16, 
+                        nPC = 8, 
                         nC = 1):
     
-    An, D = gasp_coeff_phantom( height, width, nPC, nC )
-    M = ssfp_phantom(height, width, nPC, nC, matIdx = [1, 1])
+    An, D = gasp_coeff_phantom( height, width, nPC, nC, matIdx = 0 )
+    M = ssfp_phantom(height, width, nPC, nC, matIdx = 1)
     I = apply_gasp(M, An) 
 
+    I = I / I.max() # Normalize for plotting 
     plt.plot(np.abs(I[int(height/2), :]), label='Simulated Profile')
     plt.plot(D, '--', label='Desired Profile')
     plt.legend()
@@ -147,5 +155,6 @@ def simulation_phantom(height=256,
 
 if __name__ == '__main__':
     #mesh()
+    #gasp_coeff_phantom();
     simulation_phantom()
 
