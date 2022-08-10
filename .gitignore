@@ -1,4 +1,6 @@
-*.pyc
-__pycache__/
 src/
 data/
+
+*.pyc
+__pycache__/
+.ipynb_checkpoints/

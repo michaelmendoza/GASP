@@ -1,7 +1,6 @@
 '''GASP module.'''
 
 import numpy as np
-# from mr_utils import view
 
 def gasp(I, D, C_dim, pc_dim=0):
     '''Generation of Arbitrary Spectral Profiles.
