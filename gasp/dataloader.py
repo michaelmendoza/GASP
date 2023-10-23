@@ -4,8 +4,11 @@ import mapvbvd
 async def async_read_rawdata(filepath, datatype='image', doChaAverage = True, doAveAverage = True):
     return read_rawdata(filepath, datatype, doChaAverage, doAveAverage)
 
-def read_rawdata(filepath, datatype='image', doChaAverage = True, doAveAverage = True):
-    ''' Reads rawdata files and returns NodeDataset '''
+def read_rawdata(filepath, datatype='image', doChaAverage = True, doChaSOSAverage = False, doAveAverage = True):
+    ''' Reads rawdata files and returns NodeDataset. '''
+    
+    if (doChaSOSAverage): 
+        doChaAverage = False
 
     twixObj = mapvbvd.mapVBVD(filepath)
     sqzDims = twixObj.image.sqzDims    
@@ -17,24 +20,85 @@ def read_rawdata(filepath, datatype='image', doChaAverage = True, doAveAverage =
     data = np.moveaxis(data, linIndex, 0)
     sqzDims.insert(0, sqzDims.pop(linIndex))
 
-    if doChaAverage and 'Cha' in sqzDims:
-        chaIndex = sqzDims.index('Cha')
-        data = np.mean(data, axis=chaIndex)
-        sqzDims.pop(chaIndex)
-
+    # Handle averages dimension 
     if doAveAverage and 'Ave' in sqzDims:
         chaIndex = sqzDims.index('Ave')
         data = np.mean(data, axis=chaIndex)
         sqzDims.pop(chaIndex)
                 
+    # Handle 3d data
+    if 'Par' in sqzDims:
+        sliceIndex = sqzDims.index('Par')
+        data = np.moveaxis(data, sliceIndex, 0)
+        sqzDims.insert(0, sqzDims.pop(sliceIndex))
+        is3D = True
+    else:
+        is3D = False
+
+    # Handle fft if required
     if datatype == 'image':
-        data = np.fft.fftshift(np.fft.ifft2(np.fft.fftshift(data, axes=(0, 1)), axes=(0, 1)), axes=(0, 1))
+        if is3D:
+            data = np.fft.fftshift(np.fft.ifftn(np.fft.fftshift(data, axes=(0,1,2))))
+        else:
+            data = np.fft.fftshift(np.fft.ifft2(np.fft.fftshift(data, axes=(0, 1)), axes=(0, 1)), axes=(0, 1))
     else: # datatype is kspace
         pass
 
+    # Handle coils dimension - Options for averaging coil data
+    if (doChaAverage or doChaSOSAverage) and 'Cha' in sqzDims:
+        chaIndex = sqzDims.index('Cha')
+
+        if doChaAverage:
+            data = np.mean(data, axis=chaIndex)
+        elif doChaSOSAverage:
+            data = np.sqrt(np.sum(data**2, axis=(chaIndex)))
+ 
+        sqzDims.pop(chaIndex)
+
+    # Handle depth - Make data[depth, height, width, ...] Sli = depth, set to 1 if 2d image
     if 'Sli' in sqzDims:
         sliceIndex = sqzDims.index('Sli')
         data = np.moveaxis(data, sliceIndex, 0)
         sqzDims.insert(0, sqzDims.pop(sliceIndex))
+    else:
+        sqzDims.insert(0, 'Sli')
+        data = data[np.newaxis, ...]
 
-    return { 'data':data, 'dims':sqzDims, 'shape':data.shape }
+
+    min = float(np.nanmin(np.abs(data)))
+    max = float(np.nanmax(np.abs(data)))
+    isComplex = np.iscomplexobj(data)
+
+    header =  twixObj.hdr
+    return { 'data':data, 'dims':sqzDims, 'shape':data.shape, 'min': min, 'max': max, 'isComplex': isComplex } 
+
+import os, gdown, zipfile
+def download_data(url, dataname, path = 'data'):
+    
+    # Checks if data folder exists
+    targetdir = os.path.join(os.getcwd(), path)  
+    if not os.path.exists(targetdir):
+        os.mkdir(targetdir)
+
+    # Checks if data exists
+    filepath = os.path.join(os.getcwd(), path, dataname)
+    fileExists = os.path.exists(filepath)
+    if fileExists:
+        print(f'Data: {dataname} data exists')
+        return
+
+    # Downloads data
+    print('Downloading files ...')
+    output = filepath + '.zip'
+    gdown.download(url, quiet=False, output=output, fuzzy=True)
+    print('Download complete.')
+
+    # Extracts data from .zip 
+    print('Extracting files ...')
+    with zipfile.ZipFile(output,"r") as zip_ref:
+        zip_ref.extractall(targetdir)
+        print('Extract complete.')
+        print(f'Data located at: ${filepath}')
+
+    # Remove downloaded zip file 
+    os.remove(output)

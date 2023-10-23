@@ -1,5 +1,6 @@
 src/
 data/
+notebooks/images
 
 *.pyc
 __pycache__/
