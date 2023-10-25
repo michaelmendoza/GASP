@@ -4,7 +4,7 @@ import mapvbvd
 async def async_read_rawdata(filepath, datatype='image', doChaAverage = True, doAveAverage = True):
     return read_rawdata(filepath, datatype, doChaAverage, doAveAverage)
 
-def read_rawdata(filepath, datatype='image', doChaAverage = True, doChaSOSAverage = False, doAveAverage = True):
+def read_rawdata(filepath, datatype='image', doChaAverage = False, doChaSOSAverage = False, doAveAverage = True, use3dSlices=False):
     ''' Reads rawdata files and returns NodeDataset. '''
     
     if (doChaSOSAverage): 
@@ -55,15 +55,17 @@ def read_rawdata(filepath, datatype='image', doChaAverage = True, doChaSOSAverag
  
         sqzDims.pop(chaIndex)
 
-    # Handle depth - Make data[depth, height, width, ...] Sli = depth, set to 1 if 2d image
+    # Handle 3D data 
     if 'Sli' in sqzDims:
+         # Handle depth - Make data[depth, height, width, ...] Sli = depth
         sliceIndex = sqzDims.index('Sli')
         data = np.moveaxis(data, sliceIndex, 0)
         sqzDims.insert(0, sqzDims.pop(sliceIndex))
-    else:
+    elif use3dSlices: 
+        # Make data[depth, height, width, ...] Sli = depth
+        # Set depth to 1 if 2d image
         sqzDims.insert(0, 'Sli')
         data = data[np.newaxis, ...]
-
 
     min = float(np.nanmin(np.abs(data)))
     max = float(np.nanmax(np.abs(data)))
