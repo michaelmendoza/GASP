@@ -1,13 +1,17 @@
-import numpy as np
-import mapvbvd
+import gdown
+import os
+import zipfile
 
-async def async_read_rawdata(filepath, datatype='image', doChaAverage = True, doAveAverage = True):
+import mapvbvd
+import numpy as np
+
+async def async_read_rawdata(filepath: str, datatype: str='image', doChaAverage: bool=True, doAveAverage: bool=True):
     return read_rawdata(filepath, datatype, doChaAverage, doAveAverage)
 
-def read_rawdata(filepath, datatype='image', doChaAverage = False, doChaSOSAverage = False, doAveAverage = True, use3dSlices=False):
-    ''' Reads rawdata files and returns NodeDataset. '''
+def read_rawdata(filepath: str, datatype: str='image', doChaAverage: bool=False, doChaSOSAverage: bool=False, doAveAverage: bool=True, use3dSlices: bool=False):
+    """ Reads rawdata files and returns NodeDataset. """
     
-    if (doChaSOSAverage): 
+    if doChaSOSAverage:
         doChaAverage = False
 
     twixObj = mapvbvd.mapVBVD(filepath)
@@ -38,10 +42,10 @@ def read_rawdata(filepath, datatype='image', doChaAverage = False, doChaSOSAvera
     # Handle fft if required
     if datatype == 'image':
         if is3D:
-            data = np.fft.fftshift(np.fft.ifftn(np.fft.fftshift(data, axes=(0,1,2))))
+            data = np.fft.fftshift(np.fft.ifftn(np.fft.fftshift(data, axes=(0, 1, 2))))
         else:
             data = np.fft.fftshift(np.fft.ifft2(np.fft.fftshift(data, axes=(0, 1)), axes=(0, 1)), axes=(0, 1))
-    else: # datatype is kspace
+    else:  # datatype is kspace
         pass
 
     # Handle coils dimension - Options for averaging coil data
@@ -51,7 +55,7 @@ def read_rawdata(filepath, datatype='image', doChaAverage = False, doChaSOSAvera
         if doChaAverage:
             data = np.mean(data, axis=chaIndex)
         elif doChaSOSAverage:
-            data = np.sqrt(np.sum(data**2, axis=(chaIndex)))
+            data = np.sqrt(np.sum(data**2, axis=chaIndex))
  
         sqzDims.pop(chaIndex)
 
@@ -67,15 +71,15 @@ def read_rawdata(filepath, datatype='image', doChaAverage = False, doChaSOSAvera
         sqzDims.insert(0, 'Sli')
         data = data[np.newaxis, ...]
 
-    min = float(np.nanmin(np.abs(data)))
-    max = float(np.nanmax(np.abs(data)))
+    mmin = float(np.nanmin(np.abs(data)))
+    mmax = float(np.nanmax(np.abs(data)))
     isComplex = np.iscomplexobj(data)
 
-    header =  twixObj.hdr
-    return { 'data':data, 'dims':sqzDims, 'shape':data.shape, 'min': min, 'max': max, 'isComplex': isComplex } 
+    header = twixObj.hdr
+    return {'data': data, 'dims': sqzDims, 'shape': data.shape, 'min': mmin, 'max': mmax, 'isComplex': isComplex}
 
-import os, gdown, zipfile
-def download_data(url, dataname, path = 'data'):
+
+def download_data(url: str, dataname: str, path: str='data'):
     
     # Checks if data folder exists
     targetdir = os.path.join(os.getcwd(), path)  

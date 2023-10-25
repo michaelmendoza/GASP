@@ -1,9 +1,11 @@
 import os
 import matplotlib.pyplot as plt
+import numpy as np
 from matplotlib.animation import FuncAnimation
 import seaborn as sns
 
-def view3D(filename, data3D, path='./images/'):
+
+def view3D(filename: str, data3D: np.ndarray, path: str='./images/') -> None:
 
     # set seaborn darkgrid theme
     sns.set_theme(style="darkgrid")
@@ -12,7 +14,7 @@ def view3D(filename, data3D, path='./images/'):
 
     def animate(frame_num):
         ax.clear()
-        ax.imshow(abs(data3D[:,:,frame_num]), cmap='gray')
+        ax.imshow(abs(data3D[:, :, frame_num]), cmap='gray')
         return ax
 
     anim = FuncAnimation(fig, animate, frames=data3D.shape[2], interval=1)

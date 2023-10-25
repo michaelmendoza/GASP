@@ -1,9 +1,10 @@
-''' ssfp simulation '''
+""" ssfp simulation """
 
 import numpy as np
 
-def ssfp(T1, T2, TR, TE, alpha, dphi=[0], field_map=0, M0=1, f0=0, phi=0):
-    ''' Multiple accquistion ssfp '''
+
+def ssfp(T1, T2, TR, TE, alpha, dphi=(0,), field_map=0, M0=1, f0=0, phi=0) -> np.ndarray:
+    """ Multiple acquisition ssfp """
     dphi = np.atleast_2d(dphi)
 
     M = []
@@ -13,9 +14,10 @@ def ssfp(T1, T2, TR, TE, alpha, dphi=[0], field_map=0, M0=1, f0=0, phi=0):
     M = np.squeeze(M)
     return M
 
+
 def _ssfp(T1, T2, TR, TE, alpha, dphi=0, field_map=0, M0=1, f0=0, phi=0):
-    ''' transverse signal for ssfp mri after excitation at TE 
-    
+    """ transverse signal for ssfp mri after excitation at TE
+
     Parameters
     ----------
     T1 : float or array_like
@@ -33,11 +35,11 @@ def _ssfp(T1, T2, TR, TE, alpha, dphi=0, field_map=0, M0=1, f0=0, phi=0):
     M0 : float or array_like, optional
         proton density.
     f0 : float, optional
-        off-resonance (in Hz). Includes factors like the chemical shift 
+        off-resonance (in Hz). Includes factors like the chemical shift
         of species w.r.t. the water peak.
     phi : float, optional
         phase offset (in rad).
-    '''
+    """
     
     # Convention for Ernst-Anderson based implementation from Hoff
     field_map = -1 * field_map
@@ -49,7 +51,7 @@ def _ssfp(T1, T2, TR, TE, alpha, dphi=0, field_map=0, M0=1, f0=0, phi=0):
     f0 = np.atleast_2d(f0)
     field_map = np.atleast_2d(field_map)
 
-    # Compute exponetial decay and handle T1, T2 of zero
+    # Compute exponential decay and handle T1, T2 of zero
     E1 = np.zeros(T1.shape)
     E1[T1 > 0] = np.exp(-TR/T1[T1 > 0])
     E2 = np.zeros(T2.shape)
@@ -79,8 +81,10 @@ def _ssfp(T1, T2, TR, TE, alpha, dphi=0, field_map=0, M0=1, f0=0, phi=0):
 
     return Mc
 
-def add_noise(I, mu=0, sigma=0.005, factor = 1):
-    r'''add gaussian noise to given simulated bSSFP signals
+
+def add_noise(I: np.ndarray, mu: float=0, sigma: float=0.005, factor: float=1) -> np.ndarray:
+    """add gaussian noise to given simulated bSSFP signals
+
     Parameters
     ----------
     I: array_like
@@ -92,10 +96,9 @@ def add_noise(I, mu=0, sigma=0.005, factor = 1):
 
         Returns
     -------
-    Mxy : numpy.array
+    Mxy : numpy.ndarray
         Transverse complex magnetization with added .
-    '''
+    """
     noise = factor * np.random.normal(mu, sigma, (2,) + np.shape(I))
-    noise_matrix = noise[0]+ 1j*noise[1]
+    noise_matrix = noise[0] + 1j*noise[1]
     return I + noise_matrix
-    
