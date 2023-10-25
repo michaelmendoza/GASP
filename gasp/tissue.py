@@ -1,3 +1,5 @@
+from typing import Tuple
+
 import numpy as np
 from gasp import phantom
 
@@ -14,33 +16,36 @@ tissue_map = {
     'proteins': [0.250, 0.001]
 }
 
-def get_t1(x):
+
+def get_t1(x: int) -> Tuple[float, float]:
     x = int(x)
     keys = list(tissue_map.keys())
     return tissue_map[keys[x]][0]
 
-def get_t2(x):
+
+def get_t2(x: int) -> Tuple[float, float]:
     x = int(x)
     keys = list(tissue_map.keys())
     return tissue_map[keys[x]][1]
 
-def tissue_generator(fov = 256, type = 'blocks'):
-    ''' Generates a tissue phantom with a given shape for a number of coils.
+
+def tissue_generator(fov: int=256, type: str='blocks'):
+    """ Generates a tissue phantom with a given shape for a number of coils.
     Args:
         fov: size of image.
         type: type of phantom
     Returns:
         tissue dict
-    '''
+    """
     fov = int(fov)
     keys = list(tissue_map.keys())
 
     if type == 'shepp_logan':
-        img = phantom.shepp_logan_phantom([fov,fov]) 
+        img = phantom.shepp_logan_phantom([fov, fov])
     elif type == 'circle':
-        img = phantom.circle_phantom([fov,fov])
+        img = phantom.circle_phantom([fov, fov])
     elif type == 'circles':
-        img = phantom.circle_array_phantom([fov,fov])
+        img = phantom.circle_array_phantom([fov, fov])
     elif type == 'blocks':
         img = phantom.block_phantom()
     else:
@@ -54,5 +59,5 @@ def tissue_generator(fov = 256, type = 'blocks'):
     t2 = list(map(lambda x: get_t2(x), img.flatten()))
     t2 = np.array(t2).reshape(img.shape)
 
-    tissue_phantom = {'mask':mask, 't1':t1, 't2':t2 }
+    tissue_phantom = {'mask': mask, 't1': t1, 't2': t2 }
     return tissue_phantom
