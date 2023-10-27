@@ -16,5 +16,5 @@ To setup a python enviroment with conda:
 > ```
 > Then install packages with pip:
 > ```
-> pip install numpy matplotlib seaborn pymapvbvd jupyterlab gdown
+> pip install numpy matplotlib scikit-image seaborn pymapvbvd jupyterlab gdown
 > ```

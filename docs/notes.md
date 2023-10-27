@@ -20,3 +20,9 @@
 ## Ideas for Future Work
 - Using a combinations of GASP models in some kind of ensemble filter, perhaps with classifying tissues to be associated with a GASP filter or classfying to set the weights of the filter
 - Normalize by GS recon?
+
+
+## New ideas
+- Match filter function for tissue selection
+- Finding min spectal size
+- MR spectroscopy
