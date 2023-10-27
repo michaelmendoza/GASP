@@ -65,3 +65,38 @@ def triangle_periodic(img_width, period, offset, bw):
     response = np.roll(response, offset)
     response = response[:img_width]
     return response
+
+def square(width: int, bw: float, shift: float):
+    ''' Square response curve
+    width: number of pixels of response
+    bw: width of bandpass as fraction of width: 0 to 1
+    shift: shift of bandpass as fraction of width: -0.5 to 0.5
+    '''
+    if bw < 0:
+        bw = 0
+    if bw > 1:
+        bw = 1
+
+    if shift < -0.5:
+        shift = -0.5
+    if shift > 0.5:
+        shift = 0.5
+
+    bandpass = np.zeros(width)
+    bw = width * bw
+    x0 = shift * width
+    xlo = int(width/2-bw/2+x0)
+    xhi = int(width/2+bw/2+x0)
+    bandpass[xlo:xhi] = 1
+    return bandpass
+
+def sinc(width, bw, shift):
+    ''' Sinc response curve
+    width: number of pixels of response
+    bw: width of bandpass as fraction of width: 0 to 1
+    shift: shift of bandpass as fraction of width: -0.5 to 0.5
+    '''
+    x0 = -1/bw * shift
+    x = np.linspace(-1/bw + x0, 1/bw + x0, width)
+    filter = np.sinc(x)
+    return filter
