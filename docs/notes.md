@@ -26,3 +26,17 @@
 - Match filter function for tissue selection
 - Finding min spectal size
 - MR spectroscopy
+
+## Things to investigate
+- Window 
+    - Gaussian
+    - Others
+- Number of TRs and Phase-Cycles vs fitting (MSE)
+- Optimize TR/PC for Orthogonality (metrics for Orthgonality)
+- TR (Modes) vs TR (other values)
+- Train model on phantom (one period) vs train on simulated phantom (one train)
+- Train model with simulated - and use on real data for water/fat separation
+- FEMR for generating data 
+- using SSFP instead of bSSFP
+- sensentivity to steady state 
+

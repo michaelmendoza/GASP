@@ -1,6 +1,5 @@
 import numpy as np
 
-
 def phantom_generator(fov: int=256, coil: int=1, type: str='shepp_logan') -> np.ndarray:
     """ Generates a phantom with a given shape for a number of coils.
     Args:

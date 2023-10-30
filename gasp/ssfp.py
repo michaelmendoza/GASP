@@ -2,7 +2,6 @@
 
 import numpy as np
 
-
 def ssfp(T1, T2, TR, TE, alpha, dphi=(0,), field_map=0, M0=1, f0=0, phi=0) -> np.ndarray:
     """ Multiple acquisition ssfp """
     dphi = np.atleast_2d(dphi)

@@ -4,7 +4,6 @@ import numpy as np
 from matplotlib.animation import FuncAnimation
 import seaborn as sns
 
-
 def view3D(filename: str, data3D: np.ndarray, path: str='./images/') -> None:
 
     # set seaborn darkgrid theme
