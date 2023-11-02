@@ -1,5 +1,4 @@
 from typing import Tuple
-
 import numpy as np
 from gasp import phantom
 
@@ -16,18 +15,15 @@ tissue_map = {
     'proteins': [0.250, 0.001]
 }
 
-
 def get_t1(x: int) -> Tuple[float, float]:
     x = int(x)
     keys = list(tissue_map.keys())
     return tissue_map[keys[x]][0]
 
-
 def get_t2(x: int) -> Tuple[float, float]:
     x = int(x)
     keys = list(tissue_map.keys())
     return tissue_map[keys[x]][1]
-
 
 def tissue_generator(fov: int=256, type: str='blocks'):
     """ Generates a tissue phantom with a given shape for a number of coils.
@@ -46,6 +42,8 @@ def tissue_generator(fov: int=256, type: str='blocks'):
         img = phantom.circle_phantom([fov, fov])
     elif type == 'circles':
         img = phantom.circle_array_phantom([fov, fov])
+    elif type == 'block':
+        img = phantom.block_phantom_single(fov)
     elif type == 'blocks':
         img = phantom.block_phantom()
     else:

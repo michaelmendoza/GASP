@@ -39,4 +39,5 @@
 - FEMR for generating data 
 - using SSFP instead of bSSFP
 - sensentivity to steady state 
+- train with a range of flip-angles
 

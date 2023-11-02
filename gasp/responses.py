@@ -4,6 +4,7 @@ import math
 
 import numpy as np
 from scipy.signal import triang 
+from scipy.stats import norm
 
 def triangle(x0, bw):
     '''Spatial forcing function.
@@ -100,3 +101,26 @@ def sinc(width, bw, shift):
     x = np.linspace(-1/bw + x0, 1/bw + x0, width)
     filter = np.sinc(x)
     return filter
+
+def gaussian(width, bw, shift):
+    ''' Gaussian response curve 
+    width: number of pixels of response
+    bw: width of gaussian: 0 to 1
+    shift: shift of bandpass as fraction of width: -0.5 to 0.5
+    '''
+    sigma = bw / .2
+    mu = 0
+    x = np.linspace(-10, 10, width)
+    y = norm.pdf(x, mu, sigma)
+    y = np.roll(y, int(shift * width))
+    y = y / max(y)
+    return y
+
+def notch(width, bw, shift):
+    return 1 - gaussian(width, bw, shift)
+
+def make_periodic(x, period:int = 2):
+    length = x.shape[0]
+    x = np.tile(x,(period))
+    #x = np.roll(x, int(length / 2))
+    return x

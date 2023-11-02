@@ -78,12 +78,8 @@ def gasp_coefficients(I, D, C_dim, pc_dim: int=0):
 
     return out, x
 
-
 def apply_gasp(I, An):
-    I = np.squeeze(I).transpose(1, 2, 0)
+    ''' Use gasp model on input magenatization data, I. Shape should be [height, width, PC x TRs]'''
+    #I = np.squeeze(I).transpose(1, 2, 0)
     xx, yy = I.shape[0], I.shape[1]
     return I.dot(An).reshape(xx, yy)
-
-
-if __name__ == '__main__':
-    pass

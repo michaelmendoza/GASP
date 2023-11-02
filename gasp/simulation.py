@@ -5,11 +5,11 @@ from gasp import ssfp, tissue, gasp as GASP
 import warnings
 warnings.simplefilter('ignore')
 
-def simulate_gasp(D, width = 256, height = 256, npcs = 16, TRs = [5e-3, 10e-3, 15e-3], alpha = np.deg2rad(60), gradient = 2 * np.pi):
-    ''' Simulates gasp with tissue phantom '''
+def simulate_ssfp(width = 256, height = 256, npcs = 16, TRs = [5e-3, 10e-3, 20e-3], alpha = np.deg2rad(60), gradient = 2 * np.pi, phantom_type='circle'):
+    ''' Simulates bssfp with tissue phantom '''
 
     # Create phantoms, tissues, parameters
-    t = tissue.tissue_generator(type='circle')
+    t = tissue.tissue_generator(type=phantom_type)
     mask = t['mask']
     size = mask.shape
     t1 = t['t1']
@@ -27,7 +27,11 @@ def simulate_gasp(D, width = 256, height = 256, npcs = 16, TRs = [5e-3, 10e-3, 1
         TE = TR / 2.0
         M[..., ii] = ssfp.ssfp(t1, t2, TR, TE, alpha, pcs, field_map=f, M0 = mask)
     M = np.reshape(M, (height, width, 1, npcs,  nTRs))
+    #M = ssfp.add_noise(M, sigma=0.005)
+    return M
     
+def train_gasp(M, D):
+
     # Create mask of phantom
     _ = np.sqrt(np.sum(np.abs(M)**2, axis=2))
     _ = np.mean(_, axis=2)
@@ -54,13 +58,48 @@ def simulate_gasp(D, width = 256, height = 256, npcs = 16, TRs = [5e-3, 10e-3, 1
     
     # Run gasp
     Ic = np.zeros((ncoils, height, width), dtype='complex')
+    An = []
     for cc in range(ncoils):
-        Ic[cc, ...] = GASP.gasp(data[cc, ...], D, C_dim, pc_dim=0)
+        Ic[cc, ...], _An = GASP.gasp_coefficients(data[cc, ...], D, C_dim, pc_dim=0)
+        An.append(_An)
     Ic = np.sqrt(np.sum(np.abs(Ic)**2, axis=0))
-    
-    return Ic, M
 
-def view_gasp(Ic, M, D):
+    return Ic, An
+
+def evaluate_gasp(M, G):
+    Ic = GASP.apply_gasp(M, G)
+    return Ic
+
+def simulate_gasp(D, width = 256, height = 256, npcs = 16, TRs = [5e-3, 10e-3, 20e-3], alpha = np.deg2rad(60), gradient = 2 * np.pi, phantom_type='circle'):
+    ''' Simulates gasp with tissue phantom '''
+
+    # Simulate ssfp with tissue phantom 
+    M = simulate_ssfp(width, height, npcs, TRs, alpha, gradient, phantom_type)
+    
+    # Train gasp model coefficients
+    Ic, An = train_gasp(M, D)
+    
+    return Ic, M, An
+
+def view_gasp_input(M):
+    ''' Plots input magnetization, M'''
+    
+    height = M.shape[0]
+    width = M.shape[1]
+
+    # Plot data
+    _ = np.sqrt(np.sum(np.abs(M)**2, axis=2))
+    _ = abs(_[:,:,0,0])
+
+    f = plt.figure(figsize=(20,3))
+    ax = f.add_subplot(121)
+    ax2 = f.add_subplot(122)
+
+    ax.imshow(_, cmap='gray')
+    ax2.plot(_[int(width/2), :])
+    plt.show()
+
+def view_gasp_results(Ic, M, D):
     ''' Plots the results of gasp for given gasp output, Ic, input magnetization, M, 
         and target spectrum, D '''
     
@@ -85,10 +124,22 @@ def view_gasp(Ic, M, D):
 
     plt.show()
 
-def view_gasp_analsys(G, D):
+def view_gasp(Ic, D):
+    Ic = np.abs(Ic)
+    s = np.abs(Ic[int(Ic.shape[0]/2), :])
+
+    f = plt.figure(figsize=(10,6))
+    ax = f.add_subplot(2, 2, 1)
+    ax2 = f.add_subplot(2, 2, 2)
+    ax.imshow(Ic, cmap='gray')
+    ax2.plot(s, label='Simulated Profile')
+    ax2.plot(D, '--', label='Desired Profile')
+
+def view_gasp_comparison(G, D):
+    G = np.abs(G)
     length = len(G)
 
-    f = plt.figure(figsize=(20,3))
+    f = plt.figure(figsize=(20,6))
     for i in range(length):
         ax = f.add_subplot(2, 8, i+1)
         ax2 = f.add_subplot(2, 8, 8 + i+1)
