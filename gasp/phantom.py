@@ -29,7 +29,7 @@ def phantom_generator(fov: int=256, coil: int=1, type: str='shepp_logan') -> np.
     #img = img * generate_birdcage_sensitivities(matrix_size=fov, number_of_coils=coil)
     return img
 
-def block_phantom_single(shape: int=256, padding: int=0):
+def block_phantom_single(shape: int=256, padding: int=32):
     s = (shape - 2 * padding, shape - 2 * padding)
     block = np.ones(s) * 1.0
     block = np.pad(block, (padding, padding))
