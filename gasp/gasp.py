@@ -60,6 +60,11 @@ def gasp_coefficients(I, D, C_dim, pc_dim: int=0):
     I = I[mid[0]-pad[0]:mid[0]+pad[0], mid[1]-pad[1]:mid[1]+pad[1], :]
     D = D[mid[1]-pad[1]:mid[1]+pad[1]]
 
+    # import matplotlib.pyplot as plt
+    # plt.imshow(np.abs(I[:, :, 0]))
+    # plt.show()
+    # print(I.shape)
+
     #view(I, movie_axis=-1)
 
     # Now let's put all the voxels' time curves down the first dim
