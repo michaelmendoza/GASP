@@ -101,6 +101,8 @@ def load_dataset6a():
     return M
     
 def load_dataset7a():
+    url = 'https://drive.google.com/file/d/11szQZR8MPmT09zaM-lCSc4nUlNC4E-el/view?usp=sharing'
+    dataloader.download_data(url, '20231106_GASP_PHANTOM')
     filepath =  os.path.join(os.getcwd(), 'data', '20231106_GASP_PHANTOM', '') 
     files = ['meas_MID162_bSSFP_gasp_knee_fa90_1x1x2_2D_TR6ms_FID55595.dat',
              'meas_MID163_bSSFP_gasp_knee_fa90_1x1x2_2D_TR12ms_FID55596.dat',
@@ -113,6 +115,8 @@ def load_dataset7a():
     return M
 
 def load_dataset7b():
+    url = 'https://drive.google.com/file/d/11szQZR8MPmT09zaM-lCSc4nUlNC4E-el/view?usp=sharing'
+    dataloader.download_data(url, '20231106_GASP_PHANTOM')
     filepath =  os.path.join(os.getcwd(), 'data', '20231106_GASP_PHANTOM', '') 
     files = ['meas_MID165_bSSFP_gasp_knee_fa20_1x1x2_2D_TR6ms_FID55598.dat',
              'meas_MID166_bSSFP_gasp_knee_fa20_1x1x2_2D_TR12ms_FID55599.dat',
@@ -125,6 +129,8 @@ def load_dataset7b():
     return M
 
 def load_dataset8a():
+    url = 'https://drive.google.com/file/d/1pbn2gsxe-PjvW9vSIE6pnfbCUVWrUGbe/view?usp=sharing'
+    dataloader.download_data(url, '20231106_GASP_KNEE')
     filepath =  os.path.join(os.getcwd(), 'data', '20231106_GASP_KNEE', '') 
     files = ['meas_MID123_bSSFP_gasp_knee_faMax_1x1x2_2D_TR6ms_FID55556.dat',
              'meas_MID124_bSSFP_gasp_knee_faMax_1x1x2_2D_TR12ms_FID55557.dat',
@@ -137,6 +143,8 @@ def load_dataset8a():
     return M
 
 def load_dataset8b():
+    url = 'https://drive.google.com/file/d/1pbn2gsxe-PjvW9vSIE6pnfbCUVWrUGbe/view?usp=sharing'
+    dataloader.download_data(url, '20231106_GASP_KNEE')
     filepath =  os.path.join(os.getcwd(), 'data', '20231106_GASP_KNEE', '') 
     files = ['meas_MID127_bSSFP_gasp_knee_fa20_1x1x2_2D_TR6ms_FID55560.dat',
              'meas_MID128_bSSFP_gasp_knee_fa20_1x1x2_2D_TR12ms_FID55561.dat',
@@ -149,6 +157,8 @@ def load_dataset8b():
     return M
 
 def load_dataset8c():
+    url = 'https://drive.google.com/file/d/1pbn2gsxe-PjvW9vSIE6pnfbCUVWrUGbe/view?usp=sharing'
+    dataloader.download_data(url, '20231106_GASP_KNEE')
     filepath =  os.path.join(os.getcwd(), 'data', '20231106_GASP_KNEE', '') 
     files = ['meas_MID126_DIXON_2D_3echoes_FID55559.dat']
     M = dataloader.read_rawdata(filepath + files[0])['data']
