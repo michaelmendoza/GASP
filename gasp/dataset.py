@@ -87,9 +87,18 @@ def load_dataset5():
     M = np.stack([M0,M1,M2], axis=-1)
     return M
 
-def load_dataset6():
+def load_dataset6a():
     url = 'https://drive.google.com/file/d/18NV--KkY9QmXm9OVSL73Lvm8Iqsw7ALH/view?usp=sharing'
     dataloader.download_data(url, '20190827_GASP_INVIVO_BRAIN_HIP')
+    filepath =  os.path.join(os.getcwd(), 'data', '20190827_GASP_INVIVO_BRAIN_HIP', '') 
+    files = ['meas_MID299_TRUFI_TE3_FID49324.dat',
+             'meas_MID300_TRUFI_TE6_FID49325.dat',
+             'meas_MID301_TRUFI_TE12_FID49326.dat']
+    M0 = dataloader.read_rawdata(filepath + files[0])['data']
+    M1 = dataloader.read_rawdata(filepath + files[1])['data']
+    M2 = dataloader.read_rawdata(filepath + files[2])['data']
+    M = np.stack([M0,M1,M2], axis=-1)
+    return M
     
 def load_dataset7a():
     filepath =  os.path.join(os.getcwd(), 'data', '20231106_GASP_PHANTOM', '') 
