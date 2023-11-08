@@ -46,6 +46,16 @@ def tissue_generator(fov: int=256, type: str='blocks'):
         img = phantom.block_phantom_single(fov)
     elif type == 'blocks':
         img = phantom.block_phantom()
+    elif type == 'line':
+        img = phantom.line_phantom()
+    elif type == 'line-whitematter':
+        img = phantom.line_phantom() * 2
+    elif type == 'line-graymatter':
+        img = phantom.line_phantom() * 3
+    elif type == 'line-muscle':
+        img = phantom.line_phantom() * 4
+    elif type == 'line-fat':
+        img = phantom.line_phantom() * 6
     else:
         raise ValueError('Incorrect phantom type')
 
