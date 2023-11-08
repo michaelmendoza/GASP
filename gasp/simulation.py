@@ -148,5 +148,6 @@ def view_gasp_comparison(G, D):
         g = G[i]
         d = D[i]
         ax.imshow(g, cmap='gray')
+        ax.axis('off')
         ax2.plot(np.abs(g[int(g.shape[0]/2), :]), label='Simulated Profile')
         ax2.plot(d, '--', label='Desired Profile')
