@@ -49,6 +49,14 @@
 - Reduced field of view with gasp 
 - Plot of coefficents, and look at residual 
 - Can gasp be used for segmentation?
+- Create plot angle vs angle (off)
+- Validation of Spatial vs Spectral Profile
+- Simulation training with Evaluating Real Data
+- DL / Non-linear LeastSqaures
+- Phase for forcing functions 
+- Look at Ellipses 
+- Multiple Fat peaks
+- Spectroscopy 
 
 Discussion: 
 - single zero crossing allowed for linear model 
