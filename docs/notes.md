@@ -21,7 +21,6 @@
 - Using a combinations of GASP models in some kind of ensemble filter, perhaps with classifying tissues to be associated with a GASP filter or classfying to set the weights of the filter
 - Normalize by GS recon?
 
-
 ## New ideas
 - Match filter function for tissue selection
 - Finding min spectal size
@@ -40,4 +39,25 @@
 - using SSFP instead of bSSFP
 - sensentivity to steady state 
 - train with a range of flip-angles
+- gasp needs zero pad of at least 1-2 values to work, why?
+- Multiple alpha, vs different tissues 
+- Single line GASP
+- Mult alpha data for GASP
+- Deep Network
+- Test real 
+- Nonlinear regression
+- Reduced field of view with gasp 
+- Plot of coefficents, and look at residual 
+- Can gasp be used for segmentation?
+- Create plot angle vs angle (off)
+- Validation of Spatial vs Spectral Profile
+- Simulation training with Evaluating Real Data
+- DL / Non-linear LeastSqaures
+- Phase for forcing functions 
+- Look at Ellipses 
+- Multiple Fat peaks
+- Spectroscopy 
+
+Discussion: 
+- single zero crossing allowed for linear model 
 

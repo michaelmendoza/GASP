@@ -1,3 +1,4 @@
+import math
 import numpy as np
 import matplotlib.pyplot as plt 
 from skimage.filters import threshold_li
@@ -30,7 +31,7 @@ def simulate_ssfp(width = 256, height = 256, npcs = 16, TRs = [5e-3, 10e-3, 20e-
     #M = ssfp.add_noise(M, sigma=0.005)
     return M
     
-def train_gasp(M, D):
+def train_gasp(M, D, clines=32):
 
     # Create mask of phantom
     _ = np.sqrt(np.sum(np.abs(M)**2, axis=2))
@@ -54,7 +55,7 @@ def train_gasp(M, D):
     ncoils, npcs, height, width = data.shape[:]
 
     # Calibration box - (# Number of lines of calibration, Pixels on signal)
-    C_dim = (32, width)
+    C_dim = (clines, width)
     
     # Run gasp
     Ic = np.zeros((ncoils, height, width), dtype='complex')
@@ -81,7 +82,7 @@ def simulate_gasp(D, width = 256, height = 256, npcs = 16, TRs = [5e-3, 10e-3, 2
     
     return Ic, M, An
 
-def view_gasp_input(M):
+def view_gasp_input(M, slices=[0,0]):
     ''' Plots input magnetization, M'''
     
     height = M.shape[0]
@@ -89,7 +90,7 @@ def view_gasp_input(M):
 
     # Plot data
     _ = np.sqrt(np.sum(np.abs(M)**2, axis=2))
-    _ = abs(_[:,:,0,0])
+    _ = abs(_[:,:,slices[0],slices[1]])
 
     f = plt.figure(figsize=(20,3))
     ax = f.add_subplot(121)
@@ -147,5 +148,6 @@ def view_gasp_comparison(G, D):
         g = G[i]
         d = D[i]
         ax.imshow(g, cmap='gray')
+        ax.axis('off')
         ax2.plot(np.abs(g[int(g.shape[0]/2), :]), label='Simulated Profile')
         ax2.plot(d, '--', label='Desired Profile')
