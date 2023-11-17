@@ -8,6 +8,24 @@ from ssfp import bssfp
 from gasp.gasp import gasp
 
 
+# 1. take "training" image of fat and water (maybe you only need one?) with large enough spatial extent to consider
+#    spatial the same as spectral
+# 2. find desired coefficients
+# 3. take "real" image (e.g., abdomen)
+# 4. apply trained coefficients
+
+# assume 3 TRs and 16 PCs
+# - potentially interpolate in spectral dimension (either interpolation or model-based)
+# - ping Grayson about archive of raw data
+# - check Laurel hard-drive for raw data
+# - do things in Jupyter Lab (not notebooks)
+# - revisit orthonormalization -- is it useful or not?
+
+# windowing functions (Michael will do Gaussian, I can do others)
+# optimize TRs and PCs to get largest span (most expressive)
+# bSSFP vs general SSFP
+# sensitivity to steady state
+
 if __name__ == "__main__":
     L, M, N = 64, 65, 1
     M0, T1, T2 = shepp_logan(N=(L, M, N), MR=True, zlims=(-.25, .25))
@@ -45,20 +63,20 @@ if __name__ == "__main__":
     # plt.imshow(np.abs(sims[0, ...]))
     # plt.show()
 
-    # # show some voxel's spectral profile
-    # pt = (L//2, M//2)
-    # sig = sims[:, pt[0], pt[1]]
-    # fig, ax1 = plt.subplots()
-    # pc_labels = []
-    # for TR in TRs:
-    #     pc_labels += [f"TR {TR} \n {PC} deg" for PC in np.rad2deg(PCs)]
-    # ax1.plot(pc_labels, np.abs(sig), 'k-')
-    # ax1.set_ylabel('Magnitude (a.u.)')
-    # ax1.set_xlabel('Phase Cycle (in deg)')
-    # ax2 = ax1.twinx()
-    # ax2.plot(pc_labels, np.angle(sig), 'k--')
-    # ax2.set_ylabel('Phase (rad)')
-    # plt.show()
+    # show some voxel's spectral profile
+    pt = (L//2, M//2)
+    sig = sims[:, pt[0], pt[1]]
+    fig, ax1 = plt.subplots()
+    pc_labels = []
+    for TR in TRs:
+        pc_labels += [f"TR {TR} \n {PC} deg" for PC in np.rad2deg(PCs)]
+    ax1.plot(pc_labels, np.abs(sig), 'k-')
+    ax1.set_ylabel('Magnitude (a.u.)')
+    ax1.set_xlabel('Phase Cycle (in deg)')
+    ax2 = ax1.twinx()
+    ax2.plot(pc_labels, np.angle(sig), 'k--')
+    ax2.set_ylabel('Phase (rad)')
+    plt.show()
 
     # desired spatial profile (?)
     bandpass = np.zeros(sims.shape[1:])
@@ -66,8 +84,6 @@ if __name__ == "__main__":
     plt.imshow(bandpass)
     plt.show()
     bandpass = np.reshape(bandpass, (-1,))
-    # bandpass -= 1
-    # bandpass = np.abs(bandpass)
 
     # x = np.linalg.lstsq(np.reshape(sims, (sims.shape[0], -1)).T, bandpass, rcond=None)[0]
     # res = (x @ sims.reshape(x.size, -1)).reshape(sims.shape[1:])
