@@ -57,6 +57,7 @@
 - Look at Ellipses 
 - Multiple Fat peaks
 - Spectroscopy 
+- GASP per coil or afer coil combine 
 
 Discussion: 
 - single zero crossing allowed for linear model 
