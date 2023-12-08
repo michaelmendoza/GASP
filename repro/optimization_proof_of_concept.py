@@ -7,6 +7,8 @@ from scipy.optimize import minimize, shgo, direct, basinhopping, differential_ev
 from gasp.simulation import simulate_ssfp, simulate_gasp, view_gasp_input, view_gasp_comparison, train_gasp, view_gasp
 from gasp import responses
 
+RES_LOG_NAME = "opt-res.log"
+
 
 def cost(x, _K: int, desired_funs, _width: int, _height: int, _gradient: float, _phantom_type: str) -> float:
     M = []
@@ -47,6 +49,11 @@ def cost(x, _K: int, desired_funs, _width: int, _height: int, _gradient: float, 
     # plt.plot(Ic[_width // 2, :], "--")
     # plt.show()
     print(res)
+
+    with open(RES_LOG_NAME, "w") as fp:
+        towrite = np.reshape(x, (-1, 3))
+        fp.write(f"cost: {res}\n" + str(towrite) + "\n")
+
     #print(res, np.rad2deg(x[0::3]), 1000*x[1::3], np.rad2deg(x[2::3]))
     return res
 
