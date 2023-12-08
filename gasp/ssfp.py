@@ -2,6 +2,7 @@
 
 import numpy as np
 
+
 def ssfp(T1, T2, TR, TE, alpha, dphi=(0,), field_map=0, M0=1, f0=0, phi=0, useSqueeze=True) -> np.ndarray:
     """ Multiple acquisition ssfp """
     dphi = np.atleast_2d(dphi)
@@ -13,8 +14,10 @@ def ssfp(T1, T2, TR, TE, alpha, dphi=(0,), field_map=0, M0=1, f0=0, phi=0, useSq
     if len(dphi) == 1:
         M = M[..., None]
 
-    if (useSqueeze): # Squeeze out dim of length 1, otherwise shape is [width, height, dpi]
-        M = np.squeeze(M)
+    # Squeeze out dim of length 1, otherwise shape is [width, height, dpi]
+    M = np.squeeze(M)
+    if not useSqueeze and len(dphi) == 1:
+        M = M[..., None]
     return M
 
 

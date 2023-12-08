@@ -6,7 +6,8 @@ from gasp import ssfp, tissue, gasp as GASP
 import warnings
 warnings.simplefilter('ignore')
 
-def simulate_ssfp(width = 256, height = 256, npcs = 16, TRs = [5e-3, 10e-3, 20e-3], alpha = np.deg2rad(60), gradient = 2 * np.pi, phantom_type='circle'):
+
+def simulate_ssfp(width = 256, height = 256, npcs = 16, TRs = [5e-3, 10e-3, 20e-3], alpha = np.deg2rad(60), gradient = 2 * np.pi, phantom_type='circle', minTR=None, useSqueeze: bool=True, pcs=None):
     ''' Simulates bssfp with tissue phantom '''
 
     # Create phantoms, tissues, parameters
@@ -17,20 +18,27 @@ def simulate_ssfp(width = 256, height = 256, npcs = 16, TRs = [5e-3, 10e-3, 20e-
     t2 = t['t2']
     BetaMax = gradient
     beta = np.linspace(-BetaMax, BetaMax, size[1])
-    f = beta / TRs[0] / (2 * np.pi)
+    if minTR is None:
+        minTR = TRs[0]
+    f = beta / minTR / (2 * np.pi)
     f = np.tile(f, (size[0], 1))
-    pcs = np.linspace(0, 2*np.pi, npcs, endpoint=False)
+
+    # use explicitly provided PCs if given, otherwise assume linear distribution with npcs points
+    if pcs is None:
+        assert isinstance(npcs, int)
+        pcs = np.linspace(0, 2*np.pi, npcs, endpoint=False)
 
     # Create simulated phantom data
     nTRs = len(TRs)
     M = np.empty((height, width, npcs,  nTRs), dtype=np.complex128)
     for ii, TR in enumerate(TRs):
         TE = TR / 2.0
-        M[..., ii] = ssfp.ssfp(t1, t2, TR, TE, alpha, pcs, field_map=f, M0 = mask)
+        M[..., ii] = ssfp.ssfp(t1, t2, TR, TE, alpha, pcs, field_map=f, M0 = mask, useSqueeze=useSqueeze)
     M = np.reshape(M, (height, width, 1, npcs,  nTRs))
     #M = ssfp.add_noise(M, sigma=0.005)
     return M
-    
+
+
 def train_gasp(M, D, clines=32):
 
     # Create mask of phantom
@@ -67,20 +75,23 @@ def train_gasp(M, D, clines=32):
 
     return Ic, An
 
+
 def evaluate_gasp(M, G):
     Ic = GASP.apply_gasp(M, G)
     return Ic
+
 
 def simulate_gasp(D, width = 256, height = 256, npcs = 16, TRs = [5e-3, 10e-3, 20e-3], alpha = np.deg2rad(60), gradient = 2 * np.pi, phantom_type='circle'):
     ''' Simulates gasp with tissue phantom '''
 
     # Simulate ssfp with tissue phantom 
-    M = simulate_ssfp(width, height, npcs, TRs, alpha, gradient, phantom_type)
+    M = simulate_ssfp(width=width, height=height, npcs=npcs, TRs=TRs, alpha=alpha, gradient=gradient, phantom_type=phantom_type)
     
     # Train gasp model coefficients
     Ic, An = train_gasp(M, D)
     
     return Ic, M, An
+
 
 def view_gasp_input(M, slices=[0,0]):
     ''' Plots input magnetization, M'''
@@ -99,6 +110,7 @@ def view_gasp_input(M, slices=[0,0]):
     ax.imshow(_, cmap='gray')
     ax2.plot(_[int(width/2), :])
     plt.show()
+
 
 def view_gasp_results(Ic, M, D):
     ''' Plots the results of gasp for given gasp output, Ic, input magnetization, M, 
@@ -125,6 +137,7 @@ def view_gasp_results(Ic, M, D):
 
     plt.show()
 
+
 def view_gasp(Ic, D):
     Ic = np.abs(Ic)
     s = np.abs(Ic[int(Ic.shape[0]/2), :])
@@ -135,6 +148,7 @@ def view_gasp(Ic, D):
     ax.imshow(Ic, cmap='gray')
     ax2.plot(s, label='Simulated Profile')
     ax2.plot(D, '--', label='Desired Profile')
+
 
 def view_gasp_comparison(G, D):
     G = np.abs(G)

@@ -8,7 +8,7 @@ from gasp.simulation import simulate_ssfp, simulate_gasp, view_gasp_input, view_
 from gasp import responses
 
 
-def cost(x, _K: int, _desired_fun, _width: int, _height: int, _gradient: float, _phantom_type: str) -> float:
+def cost(x, _K: int, desired_funs, _width: int, _height: int, _gradient: float, _phantom_type: str) -> float:
     M = []
     for ii in range(_K):
         alpha = x[ii*3]
@@ -18,12 +18,13 @@ def cost(x, _K: int, _desired_fun, _width: int, _height: int, _gradient: float, 
         M.append(simulate_ssfp(
             width=_width,
             height=_height,
-            npcs=PC,
+            pcs=[PC],
             TRs=(TR,),
             alpha=alpha,
             gradient=_gradient,
             phantom_type=_phantom_type,
             minTR=min(x[1::3]),
+            useSqueeze=False,
         ))
 
         # plt.imshow(np.abs(M[-1].squeeze()))
@@ -33,7 +34,10 @@ def cost(x, _K: int, _desired_fun, _width: int, _height: int, _gradient: float, 
     M = np.concatenate(M, axis=-1)
     # print(M.shape)
     # view_gasp_input(M=M)
-    Ic, An = train_gasp(M=M, D=_desired_fun)
+    res = 0.0
+    for desired_fun in desired_funs:
+        Ic, An = train_gasp(M=M, D=desired_fun)
+        res += np.linalg.norm(desired_fun - Ic[_height // 2, :])**2
 
     # view_gasp(Ic, D=_desired_fun)
     # plt.show()
@@ -42,7 +46,6 @@ def cost(x, _K: int, _desired_fun, _width: int, _height: int, _gradient: float, 
     # plt.plot(desired_fun, "k-")
     # plt.plot(Ic[_width // 2, :], "--")
     # plt.show()
-    res = np.linalg.norm(desired_fun - Ic[_width // 2, :])**2
     print(res)
     #print(res, np.rad2deg(x[0::3]), 1000*x[1::3], np.rad2deg(x[2::3]))
     return res
@@ -50,10 +53,12 @@ def cost(x, _K: int, _desired_fun, _width: int, _height: int, _gradient: float, 
 
 if __name__ == "__main__":
     # x: [alpha, TR, PC]*K
-    K = 48  # total number of phase-cycles
+    K = 8  # total number of phase-cycles
     width = 256
-    height = 256
-    desired_fun = responses.square(width, bw=0.3, shift=0.25)
+    height = 1
+    desired_funs = []
+    for shift in (-.5, -.25, 0, .25, .5):
+        desired_funs.append(responses.square(width, bw=0.3, shift=shift))
     gradient = 2.0 * np.pi
 
     x0 = np.empty(3*K, dtype=float)
@@ -65,8 +70,8 @@ if __name__ == "__main__":
     x0[1::3][2*K//3:] = 12e-3
 
     x0[2::3][:K//3] = np.linspace(0, 2*np.pi, K//3, endpoint=False)
-    x0[2::3][K//3:2*K//3] = np.linspace(0, 2 * np.pi, K//3, endpoint=False)
-    x0[2::3][2*K//3:] = np.linspace(0, 2 * np.pi, K//3, endpoint=False)
+    x0[2::3][K//3:2*K//3] = np.linspace(0, 2 * np.pi, len(x0[2::3][K//3:2*K//3]), endpoint=False)
+    x0[2::3][2*K//3:] = np.linspace(0, 2 * np.pi, len(x0[2::3][2*K//3:]), endpoint=False)
 
     print(np.reshape(x0, (K, 3)))
 
@@ -76,10 +81,10 @@ if __name__ == "__main__":
         bnds.append((3e-3, 30e-3))
         bnds.append((0, 2*np.pi))
 
-    cost_fun = partial(cost, _K=K, _desired_fun=desired_fun, _width=width, _height=height, _gradient=gradient, _phantom_type="circle")
+    cost_fun = partial(cost, _K=K, desired_funs=desired_funs, _width=width, _height=height, _gradient=gradient, _phantom_type="line")
 
     print(f"FIRST GUESS IS {cost_fun(x0)}")
-    assert False
+    # assert False
 
     # res = minimize(
     #     fun=cost_fun,
