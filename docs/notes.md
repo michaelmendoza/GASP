@@ -62,3 +62,39 @@
 Discussion: 
 - single zero crossing allowed for linear model 
 
+
+----
+Paper:
+
+Analysis:
+    N [] Linear LSE vs Non-linear LSE
+
+    [] Optimization: Minimum number of to make GASP work. How do a pick a reasonable set?
+
+        M [\] MSE & Plots at with input images (i.e. different TRs and PCs) - 3 TRs & 16 PCs, 3 TR & 8 PCs, Brute Fource
+
+        N [\] Automatic Parameter Optimization/Selection with some algo
+
+    N []  Phase Effects: Elliptical Relationships. Does GASP preserve ellipses, continuity of phase?
+
+    N [] Difference of off-resonance profiles from phase cycling and linear gradient. Assumption: Off-resonace in linear gradient is good estimate of phase cycling off-resonance profiles
+
+    M [\] Training on simlulated vs real phantoms: Effectiveness
+
+    M [] Investigation of different windowing functions
+        - Window function with phase? Linear phase? Maybe zero phase is wrong? 
+
+    M [\] Training with muliple tip angles. 
+
+    M [X] Sensitivity analysis - Training at one tip angle, and evaluting at a different tip angle 
+
+    M [ ] Linear combinations of GASP co-effiecenit. IS GASP a linear operator? Does GASP perserve phase? 
+        - Check GASP per coil or afer coil combine 
+
+
+      
+
+
+
+
+
