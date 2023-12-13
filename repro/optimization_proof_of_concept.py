@@ -9,6 +9,9 @@ from gasp import responses
 
 RES_LOG_NAME = "opt-res.log"
 
+'''
+To run: python -m repro.optimization_proof_of_concept  
+'''
 
 def cost(x, _K: int, desired_funs, _width: int, _height: int, _gradient: float, _phantom_type: str) -> float:
     M = []
