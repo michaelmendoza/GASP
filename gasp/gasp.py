@@ -3,7 +3,7 @@
 import numpy as np
 
 
-def gasp(I, D, C_dim, pc_dim: int=0):
+def gasp(I, D, C_dim, pc_dim: int = 0, method: str = "linear"):
     """Generation of Arbitrary Spectral Profiles.
 
     Parameters
@@ -16,6 +16,9 @@ def gasp(I, D, C_dim, pc_dim: int=0):
         Calibration box dimensions in number of pixels.
     pc_dim : int, optional
         Axis containing phase-cycles.
+    method : str, optional
+        Method used to compute the least-squares solution.
+        Must be one of {"linear", "lev-mar"}.
 
     Returns
     -------
@@ -23,12 +26,12 @@ def gasp(I, D, C_dim, pc_dim: int=0):
         Combined image with spatial response approximating D.
     """
 
-    out, An = gasp_coefficients(I, D, C_dim, pc_dim)
+    out, An = gasp_coefficients(I=I, D=D, C_dim=C_dim, pc_dim=pc_dim, method=method)
 
     return out
 
 
-def gasp_coefficients(I, D, C_dim, pc_dim: int=0):
+def gasp_coefficients(I, D, C_dim, pc_dim: int=0, method: str = "linear"):
     """Generation of Arbitrary Spectral Profiles.
 
     Parameters
@@ -41,11 +44,16 @@ def gasp_coefficients(I, D, C_dim, pc_dim: int=0):
         Calibration box dimensions in number of pixels.
     pc_dim : int, optional
         Axis containing phase-cycles.
+    method : str, optional
+        Method used to compute the least-squares solution.
+        Must be one of {"linear", "lev-mar"}.
 
     Returns
     -------
     I0 : array_like
         Combined image with spatial response approximating D.
+    A0 : array_like
+        GASP coefficients.
     """
 
     # Let's put the phase-cycle dimension last
@@ -73,11 +81,29 @@ def gasp_coefficients(I, D, C_dim, pc_dim: int=0):
     # Now repeat the desired spectral profile the correct number of
     # times to line up with the length of each column
     D = np.tile(D, (int(I.shape[0]/D.size),))
-    # print(I.shape, D.shape)
 
     # Now solve the system
-    x = np.linalg.lstsq(I, D, rcond=None)[0]
-    # print(x.shape)
+    if method == "linear":
+        x = np.linalg.lstsq(I, D, rcond=None)[0]
+    elif method == "lev-mar":
+        from scipy.optimize import least_squares
+        npcs = I.shape[-1]
+
+        def _fun(y):
+            """
+            I @ y = D
+            => residual f(x) = I @ y - D
+            """
+            y0 = y[:npcs] + 1j*y[npcs:]
+            residual = I @ y0 - D
+            return np.concatenate((residual.real, residual.imag))
+
+        res = least_squares(fun=_fun, x0=np.zeros(npcs*2), method="lm")
+        if not res.success:
+            print(f"GASP SOLVE ERROR ({method}): {res.message}")
+        x = res.x[:npcs] + 1j*res.x[npcs:]
+    else:
+        raise ValueError(f"method must be one of {{'linear', 'lev-mar'}}; got '{method}' instead")
 
     out = I0.dot(x).reshape(xx, yy)
 
