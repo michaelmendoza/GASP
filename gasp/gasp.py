@@ -18,7 +18,7 @@ def gasp(I, D, C_dim, pc_dim: int = 0, method: str = "linear"):
         Axis containing phase-cycles.
     method : str, optional
         Method used to compute the least-squares solution.
-        Must be one of {"linear", "lev-mar"}.
+        Must be one of {"linear", "lev-mar", "lev-mar-quad"}.
 
     Returns
     -------
@@ -46,7 +46,7 @@ def gasp_coefficients(I, D, C_dim, pc_dim: int=0, method: str = "linear"):
         Axis containing phase-cycles.
     method : str, optional
         Method used to compute the least-squares solution.
-        Must be one of {"linear", "lev-mar"}.
+        Must be one of {"linear", "lev-mar", "lev-mar-quad"}.
 
     Returns
     -------
@@ -85,6 +85,7 @@ def gasp_coefficients(I, D, C_dim, pc_dim: int=0, method: str = "linear"):
     # Now solve the system
     if method == "linear":
         x = np.linalg.lstsq(I, D, rcond=None)[0]
+        out = I0.dot(x).reshape(xx, yy)
     elif method == "lev-mar":
         from scipy.optimize import least_squares
         npcs = I.shape[-1]
@@ -94,18 +95,38 @@ def gasp_coefficients(I, D, C_dim, pc_dim: int=0, method: str = "linear"):
             I @ y = D
             => residual f(x) = I @ y - D
             """
-            y0 = y[:npcs] + 1j*y[npcs:]
+            y0 = y[:npcs] + 1j*y[npcs:2*npcs]
             residual = I @ y0 - D
             return np.concatenate((residual.real, residual.imag))
 
         res = least_squares(fun=_fun, x0=np.zeros(npcs*2), method="lm")
         if not res.success:
             print(f"GASP SOLVE ERROR ({method}): {res.message}")
-        x = res.x[:npcs] + 1j*res.x[npcs:]
+        x0 = res.x[:npcs] + 1j*res.x[npcs:2*npcs]
+        out = np.reshape(I0 @ x0, (xx, yy))
+    elif method == "lev-mar-quad":
+        from scipy.optimize import least_squares
+        npcs = I.shape[-1]
+
+        def _fun(y):
+            """
+            I @ y = D
+            => residual f(x) = I @ y - D
+            """
+            y0 = y[:npcs] + 1j*y[npcs:2*npcs]
+            y1 = y[2*npcs:3*npcs] + 1j*y[3*npcs:4*npcs]
+            residual = I @ y0 + I**2 @ y1 - D
+            return np.concatenate((residual.real, residual.imag))
+
+        res = least_squares(fun=_fun, x0=np.zeros(npcs*4), method="lm")
+        if not res.success:
+            print(f"GASP SOLVE ERROR ({method}): {res.message}")
+        x0 = res.x[:npcs] + 1j*res.x[npcs:2*npcs]
+        x1 = res.x[2*npcs:3*npcs] + 1j*res.x[3*npcs:4*npcs]
+        x = np.concatenate((x0, x1))
+        out = np.reshape(I0 @ x0 + I0**2 @ x1, (xx, yy))
     else:
         raise ValueError(f"method must be one of {{'linear', 'lev-mar'}}; got '{method}' instead")
-
-    out = I0.dot(x).reshape(xx, yy)
 
     return out, x
 
