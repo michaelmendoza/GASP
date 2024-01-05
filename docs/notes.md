@@ -58,7 +58,9 @@
 - Multiple Fat peaks
 - Spectroscopy 
 - GASP per coil or afer coil combine 
-- Can it have an impulse response
+- Train on one gaussian at two locations, and add co-efficeints and see if i get the two dual filter 
+- Can it have an impulse response (Get spectrum point spread function and get response of delta function at every point)
+- Question: Does a fft of the off resonance spectrum mean anything? Can it be useful?
 
 Discussion: 
 - single zero crossing allowed for linear model 

@@ -165,9 +165,80 @@ def load_dataset8c(path = os.getcwd()):
     return M
 
 def load_dataset9a(path = os.getcwd()):
+    ''' Retreives GASP Phantom data for dixon - Experiment from Dec 22, 2023 '''
     url = 'https://drive.google.com/file/d/10ZRAlIO9w5Q3EsJLHXpnIwU14HM9n12L/view?usp=sharing'
     dataloader.download_data(url, '20231222_GASP_PHANTOM', path)
     filepath =  os.path.join(path, 'data', '20231222_GASP_PHANTOM', 'dixon', '') 
+    files = os.listdir(filepath)
+    print(f'Path: {filepath}')
+    print(f'Loading files: {files}')
+    M0 = dataloader.read_rawdata(filepath + files[0])['data']
+    M1 = dataloader.read_rawdata(filepath + files[1])['data']
+    M2 = dataloader.read_rawdata(filepath + files[2])['data']
+    M = np.stack([M0,M1,M2], axis=-1)
+    return M
+
+def load_dataset9b(path = os.getcwd()):
+    ''' Retreives GASP Phantom data for fa20 - Experiment from Dec 22, 2023 '''
+    url = 'https://drive.google.com/file/d/10ZRAlIO9w5Q3EsJLHXpnIwU14HM9n12L/view?usp=sharing'
+    dataloader.download_data(url, '20231222_GASP_PHANTOM', path)
+    filepath =  os.path.join(path, 'data', '20231222_GASP_PHANTOM', 'gasp_fa20', '') 
+    files = os.listdir(filepath)
+    print(f'Path: {filepath}')
+    print(f'Loading files: {files}')
+    M0 = dataloader.read_rawdata(filepath + files[0])['data']
+    M1 = dataloader.read_rawdata(filepath + files[1])['data']
+    M2 = dataloader.read_rawdata(filepath + files[2])['data']
+    M = np.stack([M0,M1,M2], axis=-1)
+    return M
+
+def load_dataset9c(path = os.getcwd()):
+    ''' Retreives GASP Phantom data for fa90 - Experiment from Dec 22, 2023 '''
+    url = 'https://drive.google.com/file/d/10ZRAlIO9w5Q3EsJLHXpnIwU14HM9n12L/view?usp=sharing'
+    dataloader.download_data(url, '20231222_GASP_PHANTOM', path)
+    filepath =  os.path.join(path, 'data', '20231222_GASP_PHANTOM', 'gasp_fa90', '') 
+    files = os.listdir(filepath)
+    print(f'Path: {filepath}')
+    print(f'Loading files: {files}')
+    M0 = dataloader.read_rawdata(filepath + files[0])['data']
+    M1 = dataloader.read_rawdata(filepath + files[1])['data']
+    M2 = dataloader.read_rawdata(filepath + files[2])['data']
+    M = np.stack([M0,M1,M2], axis=-1)
+    return M
+
+def load_dataset10a(path = os.getcwd()):
+    ''' Retreives GASP Ankle data for dixon - Experiment from Dec 22, 2023 '''
+    url = 'https://drive.google.com/file/d/10hHegaWbiDYv4MsOt8nXDLpxl1b1xccE/view?usp=sharing'
+    dataloader.download_data(url, '20231222_GASP_ANKLE', path)
+    filepath =  os.path.join(path, 'data', '20231222_GASP_ANKLE', 'dixon', '') 
+    files = os.listdir(filepath)
+    print(f'Path: {filepath}')
+    print(f'Loading files: {files}')
+    M0 = dataloader.read_rawdata(filepath + files[0])['data']
+    M1 = dataloader.read_rawdata(filepath + files[1])['data']
+    M2 = dataloader.read_rawdata(filepath + files[2])['data']
+    M = np.stack([M0,M1,M2], axis=-1)
+    return M
+
+def load_dataset10b(path = os.getcwd()):
+    ''' Retreives GASP Ankle data for fa20 - Experiment from Dec 22, 2023 '''
+    url = 'https://drive.google.com/file/d/10hHegaWbiDYv4MsOt8nXDLpxl1b1xccE/view?usp=sharing'
+    dataloader.download_data(url, '20231222_GASP_ANKLE', path)
+    filepath =  os.path.join(path, 'data', '20231222_GASP_ANKLE', 'fa20', '') 
+    files = os.listdir(filepath)
+    print(f'Path: {filepath}')
+    print(f'Loading files: {files}')
+    M0 = dataloader.read_rawdata(filepath + files[0])['data']
+    M1 = dataloader.read_rawdata(filepath + files[1])['data']
+    M2 = dataloader.read_rawdata(filepath + files[2])['data']
+    M = np.stack([M0,M1,M2], axis=-1)
+    return M
+
+def load_dataset10c(path = os.getcwd()):
+    ''' Retreives GASP Ankle data for fa90 - Experiment from Dec 22, 2023 '''
+    url = 'https://drive.google.com/file/d/10hHegaWbiDYv4MsOt8nXDLpxl1b1xccE/view?usp=sharing'
+    dataloader.download_data(url, '20231222_GASP_ANKLE', path)
+    filepath =  os.path.join(path, 'data', '20231222_GASP_ANKLE', 'fa90', '') 
     files = os.listdir(filepath)
     print(f'Path: {filepath}')
     print(f'Loading files: {files}')
