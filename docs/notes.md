@@ -58,6 +58,7 @@
 - Multiple Fat peaks
 - Spectroscopy 
 - GASP per coil or afer coil combine 
+- Can it have an impulse response
 
 Discussion: 
 - single zero crossing allowed for linear model 

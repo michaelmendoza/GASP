@@ -8,4 +8,5 @@ __pycache__/
 
 .idea/
 .DS_Store
+__MACOSX/
 opt-res.log
