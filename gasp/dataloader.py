@@ -79,15 +79,15 @@ def read_rawdata(filepath: str, datatype: str='image', doChaAverage: bool=False,
     return {'data': data, 'dims': sqzDims, 'shape': data.shape, 'min': mmin, 'max': mmax, 'isComplex': isComplex}
 
 
-def download_data(url: str, dataname: str, path: str='data'):
+def download_data(url: str, dataname: str, path: str= os.getcwd()):
     
     # Checks if data folder exists
-    targetdir = os.path.join(os.getcwd(), path)  
+    targetdir = os.path.join(path, 'data')  
     if not os.path.exists(targetdir):
         os.mkdir(targetdir)
 
     # Checks if data exists
-    filepath = os.path.join(os.getcwd(), path, dataname)
+    filepath = os.path.join(path, 'data', dataname)
     fileExists = os.path.exists(filepath)
     if fileExists:
         print(f'Data: {dataname} data exists')
