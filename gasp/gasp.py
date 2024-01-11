@@ -102,8 +102,8 @@ def gasp_coefficients(I, D, C_dim, pc_dim: int=0, method: str = "linear"):
         res = least_squares(fun=_fun, x0=np.zeros(npcs*2), method="lm")
         if not res.success:
             print(f"GASP SOLVE ERROR ({method}): {res.message}")
-        x0 = res.x[:npcs] + 1j*res.x[npcs:2*npcs]
-        out = np.reshape(I0 @ x0, (xx, yy))
+        x = res.x[:npcs] + 1j*res.x[npcs:2*npcs]
+        out = np.reshape(I0 @ x, (xx, yy))
     elif method == "lev-mar-quad":
         from scipy.optimize import least_squares
         npcs = I.shape[-1]
