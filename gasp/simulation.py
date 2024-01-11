@@ -7,11 +7,11 @@ import warnings
 warnings.simplefilter('ignore')
 
 
-def simulate_ssfp(width = 256, height = 256, npcs = 16, TRs = [5e-3, 10e-3, 20e-3], alpha = np.deg2rad(60), gradient = 2 * np.pi, phantom_type='circle', minTR=None, useSqueeze: bool=True, pcs=None):
+def simulate_ssfp(width = 256, height = 256, npcs = 16, TRs = [5e-3, 10e-3, 20e-3], alpha = np.deg2rad(60), gradient = 2 * np.pi, phantom_type='circle', minTR=None, useSqueeze: bool=True, pcs=None, phantom_padding=8):
     ''' Simulates bssfp with tissue phantom '''
 
     # Create phantoms, tissues, parameters
-    t = tissue.tissue_generator(type=phantom_type)
+    t = tissue.tissue_generator(type=phantom_type, padding=phantom_padding)
     mask = t['mask']
     size = mask.shape
     t1 = t['t1']

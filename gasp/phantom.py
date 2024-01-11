@@ -1,6 +1,6 @@
 import numpy as np
 
-def phantom_generator(fov: int=256, coil: int=1, type: str='shepp_logan') -> np.ndarray:
+def phantom_generator(fov: int=256, coil: int=1, type: str='shepp_logan', padding: int = 8) -> np.ndarray:
     """ Generates a phantom with a given shape for a number of coils.
     Args:
         fov: size of image.
@@ -19,11 +19,11 @@ def phantom_generator(fov: int=256, coil: int=1, type: str='shepp_logan') -> np.
     elif type == 'circles':
         rawdata = circle_array_phantom([fov, fov])
     elif type == 'block':
-        rawdata = block_phantom_single(fov)
+        rawdata = block_phantom_single(fov, padding=padding)
     elif type == 'blocks':
-        rawdata = block_phantom(fov)
+        rawdata = block_phantom(fov, padding=padding)
     elif type == 'line':
-        rawdata = line_phantom(fov)
+        rawdata = line_phantom(fov, padding=padding)
     else:
         raise ValueError('Incorrect phantom type')
 
