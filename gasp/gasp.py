@@ -130,8 +130,21 @@ def gasp_coefficients(I, D, C_dim, pc_dim: int=0, method: str = "linear"):
 
     return out, x
 
-def apply_gasp(I, An):
+
+def apply_gasp(I, An, method:str = "linear"):
     ''' Use gasp model on input magenatization data, I. Shape should be [height, width, PC x TRs]'''
     #I = np.squeeze(I).transpose(1, 2, 0)
     xx, yy = I.shape[0], I.shape[1]
-    return I.dot(An).reshape(xx, yy)
+    
+    if method == "linear":
+        out = I.dot(An).reshape(xx, yy)
+    elif method == "lev-mar":
+        out = np.reshape(I @ An, (xx, yy))
+    elif method == "lev-mar-quad":
+        x0 = An[:An.shape[0] // 2, ...]
+        x1 = An[An.shape[0] // 2:, ...]
+        out = np.reshape(I @ x0 + I**2 @ x1, (xx, yy))
+    else:
+        raise ValueError(f"method '{method}' was not recognized")
+
+    return out

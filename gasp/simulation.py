@@ -39,7 +39,7 @@ def simulate_ssfp(width = 256, height = 256, npcs = 16, TRs = [5e-3, 10e-3, 20e-
     return M
 
 
-def train_gasp(M, D, clines=32):
+def train_gasp(M, D, clines=32, method:str = 'linear'):
 
     # Create mask of phantom
     _ = np.sqrt(np.sum(np.abs(M)**2, axis=2))
@@ -69,15 +69,15 @@ def train_gasp(M, D, clines=32):
     Ic = np.zeros((ncoils, height, width), dtype='complex')
     An = []
     for cc in range(ncoils):
-        Ic[cc, ...], _An = GASP.gasp_coefficients(data[cc, ...], D, C_dim, pc_dim=0)
+        Ic[cc, ...], _An = GASP.gasp_coefficients(data[cc, ...], D, C_dim, pc_dim=0, method=method)
         An.append(_An)
     Ic = np.sqrt(np.sum(np.abs(Ic)**2, axis=0))
 
     return Ic, An
 
 
-def evaluate_gasp(M, G):
-    Ic = GASP.apply_gasp(M, G)
+def evaluate_gasp(M, G, method:str = "linear"):
+    Ic = GASP.apply_gasp(M, G, method=method)
     return Ic
 
 
