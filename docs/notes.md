@@ -64,7 +64,7 @@
 
 Discussion: 
 - single zero crossing allowed for linear model 
-
+- The most orthogonal set, what is a measure of how good or effiecent of basis set, measure dimensionstiy, measure of linear-independance, RANK, SVD of, span of desired forcing fuctions and see how well your basis spans that space 
 
 ----
 Paper:
