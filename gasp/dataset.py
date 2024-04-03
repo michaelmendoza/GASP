@@ -247,3 +247,26 @@ def load_dataset10c(path = os.getcwd()):
     M2 = dataloader.read_rawdata(filepath + files[2])['data']
     M = np.stack([M0,M1,M2], axis=-1)
     return M
+
+def load_dataset11(path = os.getcwd(), foldername='dixon'):
+    ''' Retreives GASP Ankle data for fa90 - Experiment from March 12, 2024 '''
+    url = 'https://drive.google.com/file/d/1M1WdParsJlWMd5es3ve_e3_lfjS9O-Bl/view?usp=sharing'
+    dataloader.download_data(url, '20240312_GASP_PHANTOM', path)
+    filepath =  os.path.join(path, 'data', '20240312_GASP_PHANTOM', foldername, '') 
+    files = os.listdir(filepath)
+    print(f'Path: {filepath}')
+    print(f'Loading files: {files}')
+    M0 = dataloader.read_rawdata(filepath + files[0])['data']
+    M1 = dataloader.read_rawdata(filepath + files[1])['data']
+    M2 = dataloader.read_rawdata(filepath + files[2])['data']
+    M = np.stack([M0,M1,M2], axis=-1)
+    return M
+
+def load_dataset11a(path = os.getcwd()):
+    return load_dataset11(path, 'dixon')
+
+def load_dataset11b(path = os.getcwd()):
+    return load_dataset11(path, 'fa20')
+
+def load_dataset11c(path = os.getcwd()):
+    return load_dataset11(path, 'fa90')
