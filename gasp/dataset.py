@@ -270,3 +270,17 @@ def load_dataset11b(path = os.getcwd()):
 
 def load_dataset11c(path = os.getcwd()):
     return load_dataset11(path, 'fa90')
+
+def load_dataset12a(path = os.getcwd()):
+    ''' Retreives GASP Phantom for dixon - Experiment from March 27, 2024 '''
+    #url = 'https://drive.google.com/file/d/10hHegaWbiDYv4MsOt8nXDLpxl1b1xccE/view?usp=sharing'
+    #dataloader.download_data(url, '20231222_GASP_ANKLE', path)
+    filepath =  os.path.join(path, 'data', '20240327_GASP_PHANTOM', 'dixon', '') 
+    files = os.listdir(filepath)
+    print(f'Path: {filepath}')
+    print(f'Loading files: {files}')
+    M0 = dataloader.read_rawdata(filepath + files[0])['data']
+    M1 = dataloader.read_rawdata(filepath + files[1])['data']
+    M2 = dataloader.read_rawdata(filepath + files[2])['data']
+    M = np.stack([M0,M1,M2], axis=-1)
+    return M
