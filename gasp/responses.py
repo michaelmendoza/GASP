@@ -3,7 +3,7 @@
 import math
 
 import numpy as np
-from scipy.signal import triang 
+from scipy import signal
 from scipy.stats import norm
 
 def triangle(x0, bw):
@@ -59,7 +59,7 @@ def triangle_periodic(img_width, period, offset, bw):
     period = round(period)
     assert period >= bw
 
-    window = triang(bw)
+    window = signal.windows.triang(bw) # signal.triang(bw) <-- scipy v.0.12.0 
     window = np.concatenate((window, np.zeros(period - bw)))
     num_of_windows = math.ceil(img_width / period)
     response = np.tile(window, (num_of_windows))
