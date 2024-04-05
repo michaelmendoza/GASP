@@ -93,7 +93,17 @@ def gasp_run_model(Mdata, An, method="linear"):
     Ic = np.sqrt(np.sum(np.abs(Ic)**2, axis=0))
     return Ic
     
-def gasp_sweep(Mdata, sweep_type = 'shift', sweep_start=-0.5, sweep_end=0.5, plot_type = 'gasp', sweep_size=10, **options):
+def gasp_train_and_run(Mdata, **options):
+    defaultOptions = { 'method':'linear', 'alpha':20, 'shift':20, 'bw':0.2 }
+    options = { **defaultOptions, **options }
+    
+    Ic, An, _ = gasp_train(alpha=options['alpha'], bw=options['bw'], shift=options['shift'], method=options['method'])
+    output = gasp_run_model(Mdata, An, method=options['method'])
+
+    plot_gasp_sweep([[output, Ic]])
+    return output, Ic, An
+
+def gasp_sweep(Mdata, sweep_type = 'shift', sweep_start=-0.5, sweep_end=0.5, sweep_size=10, plot_type = 'gasp', **options):
     ''' Plots a sweep of gasp images using sweep_type. You can sweep alpha, shift and bw. '''
     
     defaultOptions = { 'method':'linear', 'alpha':20, 'shift':20, 'bw':0.2 }
@@ -117,7 +127,6 @@ def gasp_sweep(Mdata, sweep_type = 'shift', sweep_start=-0.5, sweep_end=0.5, plo
 
 def plot_gasp_sweep(dataset):
     length = len(dataset)
-    print(length)
     f = plt.figure(figsize=(20,6))
     for i in range(length):
         data0 = dataset[i][0]
@@ -128,7 +137,6 @@ def plot_gasp_sweep(dataset):
 
 def plot_gasp_sweep_with_training(dataset):
     length = len(dataset)
-    print(length)
     f = plt.figure(figsize=(20,6))
     for i in range(length):
         data0 = dataset[i][0]
