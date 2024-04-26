@@ -13,7 +13,7 @@ authors = [
 ]
 description = "Generation of Arbitary Spectral Profiles using bSSFp MRI"
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">=3.8"
 keywords = ["gasp","mri", "ssfp"]
 classifiers = [
     "Programming Language :: Python :: 3",
