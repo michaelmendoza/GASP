@@ -1,7 +1,120 @@
 """GASP module."""
 
 import numpy as np
+import numpy.typing as npt
 
+def run_gasp(I: npt.ArrayLike, An: npt.ArrayLike, method :str = "linear"):
+    ''' Run GASP model on data with shape [Height, Width, PC x TRs] 
+    
+    Parameters:
+    I (ArrayLike): Array of phase-cycled images.
+    D (ArrayLike): Vector of samples of desired spectral profile.
+    method (str, optional): Method used to compute the GASP model solution.
+        Must be one of {"affine", "linear", "lev-mar", "lev-mar-quad"}.
+
+    Reuturns:
+    ArrayLike: Reconstructed image.
+    '''
+
+    height, width = I.shape[:2]
+    
+    if method == "affine":
+        out = I.dot(An).reshape(height, width)
+    elif method == "linear":
+        I = np.column_stack((np.ones(I.shape[0]), I))
+        out = I.dot(An).reshape(height, width)
+    elif method == "lev-mar":
+        out = np.reshape(I @ An, (height, width))
+    elif method == "lev-mar-quad":
+        x0 = An[:An.shape[0] // 2, ...]
+        x1 = An[An.shape[0] // 2:, ...]
+        out = np.reshape(I @ x0 + I**2 @ x1, (height, width))
+    else:
+        raise ValueError(f"method '{method}' was not recognized")
+
+    return out
+
+def train_gasp(I: npt.ArrayLike, D: npt.ArrayLike, method: str = "linear"):
+    ''' Train GASP model on data with shape [Height, Width, PCs x TRs] and desired spectral profile D with shape [Width,]
+    
+    Parameters:
+    I (ArrayLike): Array of phase-cycled images.
+    D (ArrayLike): Vector of samples of desired spectral profile.
+    method (str, optional): Method used to compute the GASP model solution.
+        Must be one of {"affine", "linear", "lev-mar", "lev-mar-quad"}.
+
+    Reuturns:
+    tuple: Reconstructed image and coefficients.
+    '''
+
+    # Reshape the data to be in the form [Height x Width, PCs x TRs]
+    height, width = I.shape[:2]
+    I = I.reshape((-1, I.shape[-1]))    # Collapse all dimensions last dimension
+    
+    # Repeat the desired spectral profile to match the number of PCs
+    D = np.tile(D, (int(I.shape[0]/D.size),))
+
+    # Now solve the system
+    if method == "affine":
+        A = np.linalg.lstsq(I, D, rcond=None)[0]  # Solves a linear system of form: D = A * I (i.e. y = a * x)
+        out = I.dot(A).reshape(height, width)     # Reconstruct the image from the coefficients 
+    if method == "linear":
+        I = np.column_stack((np.ones(I.shape[0]), I))  # Add a column of ones (b) to the data so data is from of y = a * x + b
+        A = np.linalg.lstsq(I, D, rcond=None)[0]  # Solves a linear system of form: D = A * I (i.e. y = a * x)
+        out = I.dot(A).reshape(height, width)     # Reconstruct the image from the coefficients 
+    elif method == "quadratic":
+        I_quad = np.column_stack((np.ones(I.shape[0]), I, I**2))  # Add columns for constant, linear, and quadratic terms
+        A = np.linalg.lstsq(I_quad, D, rcond=None)[0]  # Solves a quadratic system of form: D = a * I^2 + b * I + c
+        out = I_quad.dot(A).reshape(height, width)  
+
+    return out, A
+
+def process_data_for_gasp(M, D, useMask=False, useCalibration=False, clines=2, method="linear"):
+
+    # Use mask to remove background from data for training
+    if useMask:
+        # Create mask of phantom
+        _ = np.sqrt(np.sum(np.abs(M)**2, axis=2))
+        _ = np.mean(_, axis=2)
+        _ = np.mean(_, axis=2)
+        _ = abs(_)
+        thresh = threshold_li(_)
+        mask = np.abs(_) > thresh
+
+        # Apply mask to data
+        mask0 = np.tile(
+            mask, (M.shape[2:] + (1, 1,))).transpose((3, 4, 0, 1, 2))
+        data = M * mask0
+    else:
+        data = M
+
+    if useCalibration:
+        # Extract calibration region
+        C_dim = (clines, width) # Calibration box - (# Number of lines of calibration, Pixels on signal)
+        mid = [d // 2 for d in data.shape[:2]]
+        pad = [d // 2 for d in C_dim]
+        data = data[mid[0]-pad[0]:mid[0]+pad[0], mid[1]-pad[1]:mid[1]+pad[1], :]
+        D = D[mid[1]-pad[1]:mid[1]+pad[1]]
+
+    # Reshape data to required shapes [Height, Width, Coil, PCs, TRs] -> [Coil, Height, Width, PCs x TRs]
+    data = np.reshape(data, data.shape[:-2] + (-1,))    # [Height, Width, Coil, PCs x TRs] - Combine coils and TRs
+    data = np.moveaxis(data, 2, 0)                      # [Coil, Height, Width, PCs x TRs] - Move coils to first axis
+
+    return data
+
+def train_gasp_with_coils(data, D, method="linear"):
+
+    # Get new dimensions
+    ncoils, height, width, npcs = data.shape[:]
+
+    # Run gasp
+    Ic = np.zeros((ncoils, height, width), dtype='complex')
+    An = np.zeros((ncoils, npcs+1))
+    for cc in range(ncoils):
+        Ic[cc, ...], An[cc, ...] = train_gasp(data[cc, ...], D, method=method)
+    Ic = np.sqrt(np.sum(np.abs(Ic)**2, axis=0))
+
+    return Ic, An
 
 def gasp(I, D, C_dim, pc_dim: int = 0, method: str = "linear"):
     """Generation of Arbitrary Spectral Profiles.

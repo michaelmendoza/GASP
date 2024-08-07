@@ -34,9 +34,12 @@ def phantom_generator(fov: int=256, coil: int=1, type: str='shepp_logan', paddin
 def line_phantom(length: int=256, padding: int=32):
     s = (1, length) 
     line = np.ones(s) * 1.0
-    line[0, -1] = 0
-    line[0, -padding:-1] = 0
-    line[0, 0:padding] = 0
+
+    if padding > 0:
+        line[0, -1] = 0
+        line[0, -padding:-1] = 0
+        line[0, 0:padding] = 0
+        
     line.astype(int)
     return line 
 
