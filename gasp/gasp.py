@@ -2,44 +2,44 @@
 
 import numpy as np
 import numpy.typing as npt
+from skimage.filters import threshold_li
 
-def run_gasp(I: npt.ArrayLike, An: npt.ArrayLike, method :str = "linear"):
+def run_gasp(I: npt.NDArray, An: npt.NDArray, method :str = "linear"):
     ''' Run GASP model on data with shape [Height, Width, PC x TRs] 
     
     Parameters:
-    I (ArrayLike): Array of phase-cycled images.
-    D (ArrayLike): Vector of samples of desired spectral profile.
+    I (NDArray): Array of phase-cycled images.
+    D (NDArray): Vector of samples of desired spectral profile.
     method (str, optional): Method used to compute the GASP model solution.
         Must be one of {"affine", "linear", "lev-mar", "lev-mar-quad"}.
 
     Reuturns:
-    ArrayLike: Reconstructed image.
+    NDArray: Reconstructed image.
     '''
 
     height, width = I.shape[:2]
+    I = np.reshape(I, (I.shape[0], I.shape[1], -1))
+    I = I.reshape((-1, I.shape[-1]))                
     
     if method == "affine":
         out = I.dot(An).reshape(height, width)
     elif method == "linear":
         I = np.column_stack((np.ones(I.shape[0]), I))
         out = I.dot(An).reshape(height, width)
-    elif method == "lev-mar":
-        out = np.reshape(I @ An, (height, width))
-    elif method == "lev-mar-quad":
-        x0 = An[:An.shape[0] // 2, ...]
-        x1 = An[An.shape[0] // 2:, ...]
-        out = np.reshape(I @ x0 + I**2 @ x1, (height, width))
+    elif method == "quadratic":
+        I = np.column_stack((np.ones(I.shape[0]), I, I**2))
+        out = I.dot(An).reshape(height, width)
     else:
         raise ValueError(f"method '{method}' was not recognized")
 
     return out
 
-def train_gasp(I: npt.ArrayLike, D: npt.ArrayLike, method: str = "linear"):
+def train_gasp(I: npt.NDArray, D: npt.NDArray, method: str = "linear"):
     ''' Train GASP model on data with shape [Height, Width, PCs x TRs] and desired spectral profile D with shape [Width,]
     
     Parameters:
-    I (ArrayLike): Array of phase-cycled images.
-    D (ArrayLike): Vector of samples of desired spectral profile.
+    I (NDArray): Array of phase-cycled images.
+    D (NDArray): Vector of samples of desired spectral profile.
     method (str, optional): Method used to compute the GASP model solution.
         Must be one of {"affine", "linear", "lev-mar", "lev-mar-quad"}.
 
@@ -69,7 +69,10 @@ def train_gasp(I: npt.ArrayLike, D: npt.ArrayLike, method: str = "linear"):
 
     return out, A
 
-def process_data_for_gasp(M, D, useMask=False, useCalibration=False, clines=2, method="linear"):
+def process_data_for_gasp(M, D=None, useMask=False, useCalibration=False, clines=2):
+
+    height = M.shape[0]
+    width = M.shape[1]
 
     # Use mask to remove background from data for training
     if useMask:
@@ -94,7 +97,9 @@ def process_data_for_gasp(M, D, useMask=False, useCalibration=False, clines=2, m
         mid = [d // 2 for d in data.shape[:2]]
         pad = [d // 2 for d in C_dim]
         data = data[mid[0]-pad[0]:mid[0]+pad[0], mid[1]-pad[1]:mid[1]+pad[1], :]
-        D = D[mid[1]-pad[1]:mid[1]+pad[1]]
+
+        if D is not None:
+            D = D[mid[1]-pad[1]:mid[1]+pad[1]]
 
     # Reshape data to required shapes [Height, Width, Coil, PCs, TRs] -> [Coil, Height, Width, PCs x TRs]
     data = np.reshape(data, data.shape[:-2] + (-1,))    # [Height, Width, Coil, PCs x TRs] - Combine coils and TRs
