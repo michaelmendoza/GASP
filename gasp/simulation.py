@@ -16,11 +16,12 @@ def simulate_ssfp(width = 256, height = 256, npcs = 16, TRs = [5e-3, 10e-3, 20e-
     size = mask.shape
     t1 = t['t1']
     t2 = t['t2']
+    f0 = t['f0']
     BetaMax = gradient
     beta = np.linspace(-BetaMax, BetaMax, size[1])
     if minTR is None:
         minTR = TRs[0]
-    f = beta / minTR / (2 * np.pi)
+    f = beta / minTR / (2 * np.pi) + f0
     f = np.tile(f, (size[0], 1))
 
     # use explicitly provided PCs if given, otherwise assume linear distribution with npcs points
