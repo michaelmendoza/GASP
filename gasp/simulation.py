@@ -39,6 +39,33 @@ def simulate_ssfp(width = 256, height = 256, npcs = 16, TRs = [5e-3, 10e-3, 20e-
     #M = ssfp.add_noise(M, sigma=0.005)
     return M
 
+def simulate_ssfp_sampling(width = 256, height = 256, params=[], minTR = 5e-3, gradient = 2 * np.pi, phantom_type='circle', useSqueeze: bool=True, phantom_padding=8):
+    ''' Simulates bssfp with tissue phantom. Uses a list of parameters to generate phantoms with a set of alpha, pcs, TRs parameters. '''
+    
+    # Create phantoms, tissues, parameters
+    t = tissue.tissue_generator(type=phantom_type, padding=phantom_padding)
+    mask = t['mask']
+    size = mask.shape
+    t1 = t['t1']
+    t2 = t['t2']
+    f0 = t['f0']
+    BetaMax = gradient
+    beta = np.linspace(-BetaMax, BetaMax, size[1])
+    f = beta / minTR / (2 * np.pi) + f0 # type: ignore
+    f = np.tile(f, (size[0], 1))
+
+    # Create simulated phantom data
+    num = len(params)
+    M = np.empty((height, width, params), dtype=np.complex128)
+    for ii, param in enumerate(params):
+        alpha = param[0]
+        pcs = param[1]
+        TR = param[2]
+        TE = TR / 2.0
+        M[..., ii] = ssfp.ssfp(t1, t2, TR, TE, alpha, pcs, field_map=f, M0 = mask, useSqueeze=useSqueeze)
+    M = np.reshape(M, (height, width, num))
+    #M = ssfp.add_noise(M, sigma=0.005)
+    return M
 
 def train_gasp(M, D, clines=32, method:str = 'linear'):
 
