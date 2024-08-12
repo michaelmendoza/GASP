@@ -3,6 +3,7 @@
 import numpy as np
 import numpy.typing as npt
 from skimage.filters import threshold_li
+from scipy.optimize import least_squares
 
 def run_gasp(I: npt.NDArray, An: npt.NDArray, method :str = "linear"):
     ''' Run GASP model on data with shape [Height, Width, PC x TRs] 
@@ -20,7 +21,8 @@ def run_gasp(I: npt.NDArray, An: npt.NDArray, method :str = "linear"):
     height, width = I.shape[:2]
     I = np.reshape(I, (I.shape[0], I.shape[1], -1))
     I = I.reshape((-1, I.shape[-1]))                
-    
+    npcs = I.shape[-1]
+
     if method == "affine":
         out = I.dot(An).reshape(height, width)
     elif method == "linear":
@@ -29,6 +31,11 @@ def run_gasp(I: npt.NDArray, An: npt.NDArray, method :str = "linear"):
     elif method == "quadratic":
         I = np.column_stack((np.ones(I.shape[0]), I, I**2))
         out = I.dot(An).reshape(height, width)
+    elif method == "levmar":
+        c = An[0]                     # Constant term
+        x0 = An[1:npcs+1]             # Linear terms
+        x1 = An[npcs+1:]              # Quadratic terms
+        out = np.reshape(c + I @ x0 + I**2 @ x1, (height, width))
     else:
         raise ValueError(f"method '{method}' was not recognized")
 
@@ -50,7 +57,8 @@ def train_gasp(I: npt.NDArray, D: npt.NDArray, method: str = "linear"):
     # Reshape the data to be in the form [Height x Width, PCs x TRs]
     height, width = I.shape[:2]
     I = I.reshape((-1, I.shape[-1]))    # Collapse all dimensions last dimension
-    
+    npcs = I.shape[-1]
+
     # Repeat the desired spectral profile to match the number of PCs
     D = np.tile(D, (int(I.shape[0]/D.size),))
 
@@ -58,7 +66,7 @@ def train_gasp(I: npt.NDArray, D: npt.NDArray, method: str = "linear"):
     if method == "affine":
         A = np.linalg.lstsq(I, D, rcond=None)[0]  # Solves a linear system of form: D = A * I (i.e. y = a * x)
         out = I.dot(A).reshape(height, width)     # Reconstruct the image from the coefficients 
-    if method == "linear":
+    elif method == "linear":
         I = np.column_stack((np.ones(I.shape[0]), I))  # Add a column of ones (b) to the data so data is from of y = a * x + b
         A = np.linalg.lstsq(I, D, rcond=None)[0]  # Solves a linear system of form: D = A * I (i.e. y = a * x)
         out = I.dot(A).reshape(height, width)     # Reconstruct the image from the coefficients 
@@ -66,7 +74,31 @@ def train_gasp(I: npt.NDArray, D: npt.NDArray, method: str = "linear"):
         I_quad = np.column_stack((np.ones(I.shape[0]), I, I**2))  # Add columns for constant, linear, and quadratic terms
         A = np.linalg.lstsq(I_quad, D, rcond=None)[0]  # Solves a quadratic system of form: D = a * I^2 + b * I + c
         out = I_quad.dot(A).reshape(height, width)  
+    elif method == 'levmar':
+        def quadratic_model_residuals(params):
+            c = params[0] + 1j*params[1]                                    # Constant term
+            y0 = params[2:npcs+2] + 1j*params[npcs+2:2*npcs+2]              # Linear terms
+            y1 = params[2*npcs+2:3*npcs+2] + 1j*params[3*npcs+2:4*npcs+2]   # Quadratic terms
+            residual = c + I @ y0 + I**2 @ y1 - D
+            return np.concatenate((residual.real, residual.imag))
 
+        # Initialize parameters
+        initial_params = np.zeros(4*npcs + 2)
+        initial_params[0] = np.real(np.mean(D))  # Real part of constant
+        initial_params[1] = np.imag(np.mean(D))  # Imaginary part of constant
+
+        res = least_squares(fun=quadratic_model_residuals, x0=initial_params, method="lm")
+        if not res.success:
+            print(f"GASP SOLVE ERROR ({method}): {res.message}")
+        
+        c = res.x[0] + 1j*res.x[1]
+        x0 = res.x[2:npcs+2] + 1j*res.x[npcs+2:2*npcs+2]
+        x1 = res.x[2*npcs+2:3*npcs+2] + 1j*res.x[3*npcs+2:4*npcs+2]
+        A = np.concatenate(([c], x0, x1))
+        out = np.reshape(c + I @ x0 + I**2 @ x1, (height, width))
+    else:
+        raise ValueError(f"method '{method}' was not recognized")
+    
     return out, A
 
 def process_data_for_gasp(M, D=None, useMask=False, useCalibration=False, clines=2):
