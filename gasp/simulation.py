@@ -39,7 +39,32 @@ def simulate_ssfp(width = 256, height = 256, npcs = 16, TRs = [5e-3, 10e-3, 20e-
     #M = ssfp.add_noise(M, sigma=0.005)
     return M
 
-def simulate_ssfp_sampling(width = 256, height = 256, params=[], minTR = 5e-3, gradient = 2 * np.pi, phantom_type='circle', useSqueeze: bool=True, phantom_padding=8):
+class SSFPParams():
+    def __init__(self, length, alpha, TRs, pcs):
+        
+        self.length = length
+
+        if isinstance(alpha, float):
+            self.alpha = np.ones(length) * alpha
+        else:
+            self.alpha = alpha
+        
+        self.TRs = TRs
+        self.pcs = pcs 
+
+    def get(self, index):
+        return self.alpha[index], self.TRs[index], self.pcs[index]
+
+    def getAlpha(self, index):
+        return self.alpha[index]
+
+    def getTR(self, index):
+        return self.TRs[index]
+
+    def getPC(self, index):
+        return self.pcs[index]
+
+def simulate_ssfp_sampling(width = 256, height = 256, params=None, minTR = 5e-3, gradient = 2 * np.pi, phantom_type='circle', useSqueeze: bool=True, phantom_padding=8):
     ''' Simulates bssfp with tissue phantom. Uses a list of parameters to generate phantoms with a set of alpha, pcs, TRs parameters. '''
     
     # Create phantoms, tissues, parameters
@@ -55,15 +80,15 @@ def simulate_ssfp_sampling(width = 256, height = 256, params=[], minTR = 5e-3, g
     f = np.tile(f, (size[0], 1))
 
     # Create simulated phantom data
-    num = len(params)
-    M = np.empty((height, width, params), dtype=np.complex128)
-    for ii, param in enumerate(params):
-        alpha = param[0]
-        pcs = param[1]
-        TR = param[2]
+    npcs = params.length
+    M = np.empty((height, width, npcs), dtype=np.complex128)
+    for ii in range(npcs):
+        alpha = params.getAlpha(ii)
+        pcs = params.getPC(ii)
+        TR = params.getTR(ii)
         TE = TR / 2.0
         M[..., ii] = ssfp.ssfp(t1, t2, TR, TE, alpha, pcs, field_map=f, M0 = mask, useSqueeze=useSqueeze)
-    M = np.reshape(M, (height, width, num))
+    M = np.reshape(M, (height, width, npcs))
     #M = ssfp.add_noise(M, sigma=0.005)
     return M
 
