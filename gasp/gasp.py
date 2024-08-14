@@ -28,13 +28,17 @@ def run_gasp(I: npt.NDArray, An: npt.NDArray, method :str = "linear"):
     elif method == "linear":
         I = np.column_stack((np.ones(I.shape[0]), I))
         out = I.dot(An).reshape(height, width)
-    elif method == "quadratic":
+    elif method == "quad":
         I = np.column_stack((np.ones(I.shape[0]), I, I**2))
         out = I.dot(An).reshape(height, width)
-    elif method == "levmar":
-        c = An[0]                     # Constant term
-        x0 = An[1:npcs+1]             # Linear terms
-        x1 = An[npcs+1:]              # Quadratic terms
+    elif method == "levmar-old":
+        x0 = An[:npcs]              # Linear terms
+        x1 = An[npcs:]              # Quadratic terms
+        out = np.reshape(I @ x0 + I**2 @ x1, (height, width))
+    elif method == "levmar-quad":
+        c = An[0]                    # Constant term
+        x0 = An[1:npcs+1]            # Linear terms
+        x1 = An[npcs+1:]             # Quadratic terms
         out = np.reshape(c + I @ x0 + I**2 @ x1, (height, width))
     else:
         raise ValueError(f"method '{method}' was not recognized")
@@ -70,11 +74,26 @@ def train_gasp(I: npt.NDArray, D: npt.NDArray, method: str = "linear"):
         I = np.column_stack((np.ones(I.shape[0]), I))  # Add a column of ones (b) to the data so data is from of y = a * x + b
         A = np.linalg.lstsq(I, D, rcond=None)[0]  # Solves a linear system of form: D = A * I (i.e. y = a * x)
         out = I.dot(A).reshape(height, width)     # Reconstruct the image from the coefficients 
-    elif method == "quadratic":
+    elif method == "quad":
         I_quad = np.column_stack((np.ones(I.shape[0]), I, I**2))  # Add columns for constant, linear, and quadratic terms
         A = np.linalg.lstsq(I_quad, D, rcond=None)[0]  # Solves a quadratic system of form: D = a * I^2 + b * I + c
-        out = I_quad.dot(A).reshape(height, width)  
-    elif method == 'levmar':
+        out = I_quad.dot(A).reshape(height, width) 
+    elif method == 'levmar-old':
+        def residuals(y):
+            y0 = y[:npcs] + 1j*y[npcs:2*npcs]
+            y1 = y[2*npcs:3*npcs] + 1j*y[3*npcs:4*npcs]
+            residual = I @ y0 + I**2 @ y1 - D
+            return np.concatenate((residual.real, residual.imag))
+
+        res = least_squares(fun=residuals, x0=np.zeros(npcs*4), method="lm")
+        if not res.success:
+            print(f"GASP SOLVE ERROR ({method}): {res.message}")
+
+        x0 = res.x[:npcs] + 1j*res.x[npcs:2*npcs]
+        x1 = res.x[2*npcs:3*npcs] + 1j*res.x[3*npcs:4*npcs]
+        A = np.concatenate((x0, x1))
+        out = np.reshape(I @ x0 + I**2 @ x1, (height, width))
+    elif method == 'levmar-quad':
         def quadratic_model_residuals(params):
             c = params[0] + 1j*params[1]                                    # Constant term
             y0 = params[2:npcs+2] + 1j*params[npcs+2:2*npcs+2]              # Linear terms
