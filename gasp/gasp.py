@@ -5,7 +5,7 @@ import numpy.typing as npt
 from skimage.filters import threshold_li
 from scipy.optimize import least_squares
 
-def run_gasp(I: npt.NDArray, An: npt.NDArray, method :str = "linear"):
+def run_gasp(I: npt.NDArray, An: npt.NDArray, method :str = "affine"):
     ''' Run GASP model on data with shape [Height, Width, PC x TRs] 
     
     Parameters:
@@ -23,9 +23,9 @@ def run_gasp(I: npt.NDArray, An: npt.NDArray, method :str = "linear"):
     I = I.reshape((-1, I.shape[-1]))                
     npcs = I.shape[-1]
 
-    if method == "affine":
+    if method == "linear":
         out = I.dot(An).reshape(height, width)
-    elif method == "linear":
+    elif method == "affine":
         I = np.column_stack((np.ones(I.shape[0]), I))
         out = I.dot(An).reshape(height, width)
     elif method == "quad":
@@ -45,7 +45,7 @@ def run_gasp(I: npt.NDArray, An: npt.NDArray, method :str = "linear"):
 
     return out
 
-def train_gasp(I: npt.NDArray, D: npt.NDArray, method: str = "linear"):
+def train_gasp(I: npt.NDArray, D: npt.NDArray, method: str = "affine"):
     ''' Train GASP model on data with shape [Height, Width, PCs x TRs] and desired spectral profile D with shape [Width,]
     
     Parameters:
@@ -67,10 +67,10 @@ def train_gasp(I: npt.NDArray, D: npt.NDArray, method: str = "linear"):
     D = np.tile(D, (int(I.shape[0]/D.size),))
 
     # Now solve the system
-    if method == "affine":
+    if method == "linear":
         A = np.linalg.lstsq(I, D, rcond=None)[0]  # Solves a linear system of form: D = A * I (i.e. y = a * x)
         out = I.dot(A).reshape(height, width)     # Reconstruct the image from the coefficients 
-    elif method == "linear":
+    elif method == "affine":
         I = np.column_stack((np.ones(I.shape[0]), I))  # Add a column of ones (b) to the data so data is from of y = a * x + b
         A = np.linalg.lstsq(I, D, rcond=None)[0]  # Solves a linear system of form: D = A * I (i.e. y = a * x)
         out = I.dot(A).reshape(height, width)     # Reconstruct the image from the coefficients 

@@ -21,8 +21,9 @@ def simulate_ssfp(width = 256, height = 256, npcs = 16, TRs = [5e-3, 10e-3, 20e-
     beta = np.linspace(-BetaMax, BetaMax, size[1])
     if minTR is None:
         minTR = TRs[0]
-    f = beta / minTR / (2 * np.pi) + f0
+    f = beta / minTR / (2 * np.pi) 
     f = np.tile(f, (size[0], 1))
+    f = f + f0
 
     # use explicitly provided PCs if given, otherwise assume linear distribution with npcs points
     if pcs is None:
@@ -76,8 +77,9 @@ def simulate_ssfp_sampling(width = 256, height = 256, params=None, minTR = 5e-3,
     f0 = t['f0']
     BetaMax = gradient
     beta = np.linspace(-BetaMax, BetaMax, size[1])
-    f = beta / minTR / (2 * np.pi) + f0 # type: ignore
+    f = beta / minTR / (2 * np.pi) 
     f = np.tile(f, (size[0], 1))
+    f = f + f0
 
     # Create simulated phantom data
     npcs = params.length
