@@ -1,3 +1,4 @@
+import math
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -97,4 +98,12 @@ def grid_pow2_sampling(n_points, n_turns, tr_range=(5e-3, 20e-3)):
         TR = np.pad(TR, (0, extra), mode='edge')
         PC = np.pad(PC, (0, extra), mode='edge')
     
+    return TR, PC
+
+def grid_TR_sampling(n_points, TRs):
+    npcs = math.ceil(n_points / len(TRs))
+    PCs = np.linspace(0, 2*np.pi, npcs, endpoint=False)
+    TR, PC = np.meshgrid(TRs, PCs)
+    TR, PC = TR.flatten(), PC.flatten()
+    TR, PC = TR[:n_points], PC[:n_points]
     return TR, PC

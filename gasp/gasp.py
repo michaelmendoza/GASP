@@ -120,6 +120,16 @@ def train_gasp(I: npt.NDArray, D: npt.NDArray, method: str = "affine"):
     
     return out, A
 
+def create_data_mask(M):
+    # Create mask of phantom
+    _ = np.sqrt(np.sum(np.abs(M)**2, axis=2))
+    _ = np.mean(_, axis=2)
+    _ = np.mean(_, axis=2)
+    _ = abs(_)
+    thresh = threshold_li(_)
+    mask = np.abs(_) > thresh
+    return mask
+
 def process_data_for_gasp(M, D=None, useMask=False, useCalibration=False, clines=2):
 
     height = M.shape[0]
