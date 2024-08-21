@@ -69,7 +69,7 @@ def simulate_ssfp_sampling(width = 256, height = 256, params=None, minTR = 5e-3,
     ''' Simulates bssfp with tissue phantom. Uses a list of parameters to generate phantoms with a set of alpha, pcs, TRs parameters. '''
     
     # Create phantoms, tissues, parameters
-    t = tissue.tissue_generator(type=phantom_type, padding=phantom_padding)
+    t = tissue.tissue_generator(fov=width, type=phantom_type, padding=phantom_padding)
     mask = t['mask']
     size = mask.shape
     t1 = t['t1']

@@ -1,7 +1,6 @@
 '''Forcing functions to use with GASP.'''
 
 import math
-
 import numpy as np
 from scipy import signal
 from scipy.stats import norm
@@ -86,8 +85,8 @@ def square(width: int, bw: float, shift: float):
     bandpass = np.zeros(width)
     bw = width * bw
     x0 = shift * width
-    xlo = int(width/2-bw/2+x0)
-    xhi = int(width/2+bw/2+x0)
+    xlo = round(width/2-bw/2+x0)
+    xhi = round(width/2+bw/2+x0)
     bandpass[xlo:xhi] = 1
     return bandpass
 
@@ -124,3 +123,33 @@ def make_periodic(x, period:int = 2):
     x = np.tile(x,(period))
     #x = np.roll(x, int(length / 2))
     return x
+
+def basspass_filter(width, bw, shift):
+    ''' Bass pass filter
+    width: number of pixels of response
+    bw: width of bandpass as fraction of width: 0 to 1
+    shift: shift of bandpass as fraction of width: -0.5 to 0.5
+    '''
+
+    # Parameters
+    fs = width * 2  # Sampling frequency (Hz)
+    t = np.linspace(0, 1, fs, endpoint=False)  # 1 second of data
+    shift = shift * width
+    lowcut = 64 - bw * fs/2 + shift # Lower cutoff frequency (Hz)
+    highcut = 64 + bw * fs/2 + shift# Upper cutoff frequency (Hz)
+    lowcut = max(1, lowcut)
+    highcut = min(width-1, highcut)
+    nyq = 0.5 * fs
+    low = lowcut / nyq
+    high = highcut / nyq
+    order=5
+
+    # Design filter
+    b, a = signal.butter(order, [low, high], btype='band')
+    #b, a = signal.cheby1(order, 1, [low, high], btype='band')
+    #b, a = signal.ellip(order, 1, 40, [low, high], btype='band')
+
+    # Create response
+    w, h = signal.freqz(b, a, worN=128)
+    h = np.abs(h)
+    return h
