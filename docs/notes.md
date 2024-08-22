@@ -62,6 +62,7 @@
 - Can it have an impulse response (Get spectrum point spread function and get response of delta function at every point)
 - Question: Does a fft of the off resonance spectrum mean anything? Can it be useful?
 - Use ray to paralize compute things 
+- Is there such a thing as a spectral filter, like to remove ocilation in the spectrum?
 
 Discussion: 
 - single zero crossing allowed for linear model 
@@ -96,9 +97,13 @@ Analysis:
         - Check GASP per coil or afer coil combine 
 
 
-      
-
-
-
-
-
+---
+8/22/2024:
+- Plot of alpha vs T1/T2 and spectra for different alpha and T1/T2  
+- Look at condition number of matrix
+- See if water vs fat, switch and see if its symmetric 
+- What is low alpha better than high alpha??
+- Look at FFT of SSFP signal
+- Look into l curve method
+- Look to regularization (L1, L2, etc)
+- Idea: High tip angle leads to more circular vs low tip angle. And therefore low tip angle has more information.

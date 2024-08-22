@@ -53,7 +53,7 @@ def triangle_periodic(img_width, period, offset, bw):
         Desired spatial response of uniform phantom with periodic off
         resonance
     '''
-
+    
     bw = round(bw)
     period = round(period)
     assert period >= bw
@@ -77,17 +77,14 @@ def square(width: int, bw: float, shift: float):
     if bw > 1:
         bw = 1
 
-    if shift < -0.5:
-        shift = -0.5
-    if shift > 0.5:
-        shift = 0.5
-
     bandpass = np.zeros(width)
     bw = width * bw
-    x0 = shift * width
-    xlo = round(width/2-bw/2+x0)
-    xhi = round(width/2+bw/2+x0)
+    xlo = round(width/2 - bw/2)
+    xhi = round(width/2 + bw/2)
     bandpass[xlo:xhi] = 1
+
+    # Shift response
+    bandpass = np.roll(bandpass, int(shift * width))
     return bandpass
 
 def sinc(width, bw, shift):
@@ -96,9 +93,11 @@ def sinc(width, bw, shift):
     bw: width of bandpass as fraction of width: 0 to 1
     shift: shift of bandpass as fraction of width: -0.5 to 0.5
     '''
-    x0 = -1/bw * shift
-    x = np.linspace(-1/bw + x0, 1/bw + x0, width)
+    x = np.linspace(-1/bw, 1/bw, width)
     filter = np.sinc(x)
+
+    # Shift response
+    filter = np.roll(filter, int(shift * width))
     return filter
 
 def gaussian(width, bw, shift):
@@ -124,7 +123,7 @@ def make_periodic(x, period:int = 2):
     #x = np.roll(x, int(length / 2))
     return x
 
-def basspass_filter(width, bw, shift):
+def bandpass_filter(width, bw, shift):
     ''' Bass pass filter
     width: number of pixels of response
     bw: width of bandpass as fraction of width: 0 to 1
@@ -134,8 +133,8 @@ def basspass_filter(width, bw, shift):
     # Parameters
     fs = width * 2  # Sampling frequency (Hz)
     t = np.linspace(0, 1, fs, endpoint=False)  # 1 second of data
-    lowcut =  width * (1/2 - bw + shift) # Lower cutoff frequency (Hz)
-    highcut = width * (1/2 + bw + shift) # Upper cutoff frequency (Hz)
+    lowcut =  width * (1/2 - bw) # Lower cutoff frequency (Hz)
+    highcut = width * (1/2 + bw) # Upper cutoff frequency (Hz)
     lowcut = max(1, lowcut)
     highcut = min(width-1, highcut)
     nyq = 0.5 * fs
@@ -151,4 +150,16 @@ def basspass_filter(width, bw, shift):
     # Create response
     w, h = signal.freqz(b, a, worN=width)
     h = np.abs(h)
+
+    # Shift response
+    h = np.roll(h, int(shift * width))
     return h
+
+def stopband(width, bw, shift):
+    ''' Stop band filter
+    width: number of pixels of response
+    bw: width of bandpass as fraction of width: 0 to 1
+    shift: shift of bandpass as fraction of width: -0.5 to 0.5
+    '''
+
+    return 1 - bandpass_filter(width, bw, shift)
