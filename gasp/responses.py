@@ -134,9 +134,8 @@ def basspass_filter(width, bw, shift):
     # Parameters
     fs = width * 2  # Sampling frequency (Hz)
     t = np.linspace(0, 1, fs, endpoint=False)  # 1 second of data
-    shift = shift * width
-    lowcut = 64 - bw * fs/2 + shift # Lower cutoff frequency (Hz)
-    highcut = 64 + bw * fs/2 + shift# Upper cutoff frequency (Hz)
+    lowcut =  width * (1/2 - bw + shift) # Lower cutoff frequency (Hz)
+    highcut = width * (1/2 + bw + shift) # Upper cutoff frequency (Hz)
     lowcut = max(1, lowcut)
     highcut = min(width-1, highcut)
     nyq = 0.5 * fs
@@ -150,6 +149,6 @@ def basspass_filter(width, bw, shift):
     #b, a = signal.ellip(order, 1, 40, [low, high], btype='band')
 
     # Create response
-    w, h = signal.freqz(b, a, worN=128)
+    w, h = signal.freqz(b, a, worN=width)
     h = np.abs(h)
     return h
