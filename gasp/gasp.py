@@ -118,6 +118,7 @@ def train_gasp(I: npt.NDArray, D: npt.NDArray, method: str = "affine"):
     else:
         raise ValueError(f"method '{method}' was not recognized")
     
+    A = np.array(A)
     return out, A
 
 def create_data_mask(M):

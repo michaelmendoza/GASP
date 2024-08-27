@@ -49,9 +49,10 @@ class SSFPParams():
             self.alpha = np.ones(length) * alpha
         else:
             self.alpha = alpha
+        self.alpha = np.array(self.alphas).reshape(-1, 1) 
         
-        self.TRs = TRs
-        self.pcs = pcs 
+        self.TRs = np.array(TRs).reshape(-1, 1)
+        self.pcs = np.array(pcs).reshape(-1, 1)
 
     def get(self, index):
         return self.alpha[index], self.TRs[index], self.pcs[index]
