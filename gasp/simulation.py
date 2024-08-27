@@ -49,7 +49,7 @@ class SSFPParams():
             self.alpha = np.ones(length) * alpha
         else:
             self.alpha = alpha
-        self.alpha = np.array(self.alphas).reshape(-1, 1) 
+        self.alpha = np.array(self.alpha).reshape(-1, 1) 
         
         self.TRs = np.array(TRs).reshape(-1, 1)
         self.pcs = np.array(pcs).reshape(-1, 1)
