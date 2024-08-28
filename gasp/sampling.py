@@ -103,7 +103,7 @@ def grid_pow2_sampling(n_points, n_turns, tr_range=(5e-3, 20e-3)):
 def grid_TR_sampling(n_points, TRs):
     npcs = math.ceil(n_points / len(TRs))
     PCs = np.linspace(0, 2*np.pi, npcs, endpoint=False)
-    TR, PC = np.meshgrid(TRs, PCs)
+    TR, PC = np.meshgrid(TRs, PCs,  indexing='ij')
     TR, PC = TR.flatten(), PC.flatten()
     TR, PC = TR[:n_points], PC[:n_points]
     return TR, PC
