@@ -1,7 +1,17 @@
 import os
 import numpy as np
 import matplotlib.pyplot as plt 
-from gasp import dataloader
+from gasp import dataloader, get_project_path
+
+def load_dataset(url, foldername, files = None, path = get_project_path()):
+    dataloader.download_data(url, foldername, path)
+    filepath =  os.path.join(path, 'data', foldername, '')       
+    if files is None:
+        files = os.listdir(filepath)
+        files.sort()
+    data_list = [dataloader.read_rawdata(os.path.join(filepath, file))['data'] for file in files]
+    M = np.stack(data_list, axis=-1)
+    return M
 
 def load_dataset0(path = os.getcwd()):
     url = 'https://drive.google.com/file/d/1ttvKQUAPjRJdtocAIJzUv1_7n3kBEOSI/view?usp=share_link'
@@ -100,33 +110,21 @@ def load_dataset6a(path = os.getcwd()):
     M = np.stack([M0,M1,M2], axis=-1)
     return M
     
-def load_dataset7a(path = os.getcwd()):
+def load_dataset7a():
     url = 'https://drive.google.com/file/d/11szQZR8MPmT09zaM-lCSc4nUlNC4E-el/view?usp=sharing'
-    dataloader.download_data(url, '20231106_GASP_PHANTOM', path)
-    filepath =  os.path.join(path, 'data', '20231106_GASP_PHANTOM', '') 
+    foldername = '20231106_GASP_PHANTOM'
     files = ['meas_MID162_bSSFP_gasp_knee_fa90_1x1x2_2D_TR6ms_FID55595.dat',
-             'meas_MID163_bSSFP_gasp_knee_fa90_1x1x2_2D_TR12ms_FID55596.dat',
-             'meas_MID164_bSSFP_gasp_knee_fa90_1x1x2_2D_TR24ms_FID55597.dat']    
-    
-    M0 = dataloader.read_rawdata(filepath + files[0])['data']
-    M1 = dataloader.read_rawdata(filepath + files[1])['data']
-    M2 = dataloader.read_rawdata(filepath + files[2])['data']
-    M = np.stack([M0,M1,M2], axis=-1)
-    return M
+            'meas_MID163_bSSFP_gasp_knee_fa90_1x1x2_2D_TR12ms_FID55596.dat',
+            'meas_MID164_bSSFP_gasp_knee_fa90_1x1x2_2D_TR24ms_FID55597.dat']  
+    return load_dataset(url, foldername, files)
 
-def load_dataset7b(path = os.getcwd()):
+def load_dataset7b():
     url = 'https://drive.google.com/file/d/11szQZR8MPmT09zaM-lCSc4nUlNC4E-el/view?usp=sharing'
-    dataloader.download_data(url, '20231106_GASP_PHANTOM', path)
-    filepath =  os.path.join(path, 'data', '20231106_GASP_PHANTOM', '') 
+    foldername = '20231106_GASP_PHANTOM'
     files = ['meas_MID165_bSSFP_gasp_knee_fa20_1x1x2_2D_TR6ms_FID55598.dat',
-             'meas_MID166_bSSFP_gasp_knee_fa20_1x1x2_2D_TR12ms_FID55599.dat',
-             'meas_MID167_bSSFP_gasp_knee_fa20_1x1x2_2D_TR24ms_FID55600.dat']    
-    
-    M0 = dataloader.read_rawdata(filepath + files[0])['data']
-    M1 = dataloader.read_rawdata(filepath + files[1])['data']
-    M2 = dataloader.read_rawdata(filepath + files[2])['data']
-    M = np.stack([M0,M1,M2], axis=-1)
-    return M
+            'meas_MID166_bSSFP_gasp_knee_fa20_1x1x2_2D_TR12ms_FID55599.dat',
+            'meas_MID167_bSSFP_gasp_knee_fa20_1x1x2_2D_TR24ms_FID55600.dat']  
+    return load_dataset(url, foldername, files)
 
 def load_dataset8a(path = os.getcwd()):
     url = 'https://drive.google.com/file/d/1pbn2gsxe-PjvW9vSIE6pnfbCUVWrUGbe/view?usp=sharing'
