@@ -6,7 +6,7 @@ build-backend = "hatchling.build"
 allow-direct-references = true
 
 [project]
-name = "gasp"
+name = "gasp-ssfp"
 version = "0.0.1"
 authors = [
   { name="Michael Mendoza", email="askmichaelmendoza@gmail.com" },
@@ -14,7 +14,7 @@ authors = [
 description = "Generation of Arbitary Spectral Profiles using bSSFp MRI"
 readme = "README.md"
 requires-python = ">=3.8"
-keywords = ["gasp","mri", "ssfp"]
+keywords = ["gasp", "ssfp", "mri"]
 classifiers = [
     "Programming Language :: Python :: 3",
 ]
@@ -32,3 +32,14 @@ dependencies = [
 [project.urls]
 "Homepage" = "https://github.com/michaelmendoza/gasp"
 "Bug Tracker" = "https://github.com/michaelmendoza/gasp/issues"
+
+[tool.hatch.version]
+path = "gasp/__about__.py"
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "/gasp",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["gasp"]
