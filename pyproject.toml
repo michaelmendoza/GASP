@@ -8,13 +8,14 @@ allow-direct-references = true
 [project]
 name = "gasp"
 dynamic = ["version"]
+name = "gasp-ssfp"
 authors = [
   { name="Michael Mendoza", email="askmichaelmendoza@gmail.com" },
 ]
 description = "Generation of Arbitary Spectral Profiles using bSSFp MRI"
 readme = "README.md"
 requires-python = ">=3.8"
-keywords = ["gasp","mri", "ssfp"]
+keywords = ["gasp", "ssfp", "mri"]
 classifiers = [
     "Programming Language :: Python :: 3",
 ]

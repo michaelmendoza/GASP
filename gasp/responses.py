@@ -141,6 +141,8 @@ def bandpass(width: int, bw: float, shift: float, type: str = 'butterworth') -> 
         'lorentzian': lorentzian,
         'butterworth': butterworth
     }
+
+    type = type.lower()
     if type not in responses:
         raise ValueError(f"Invalid filter type. Choose from: {', '.join(responses.keys())}")
     return responses[type](width, bw, shift)

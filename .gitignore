@@ -1,12 +1,21 @@
-src/
-data/
-notebooks/images
-
+# Python-related files
+/__pycache__
+*__pycache__
+*.ipynb_checkpoints
+.ipynb_checkpoints
 *.pyc
 __pycache__/
 .ipynb_checkpoints/
 
+# IDE-related files
 .idea/
 .DS_Store
 __MACOSX/
 opt-res.log
+
+# Build-related files
+dist/
+src/
+data/
+notebooks/images
+claude/
