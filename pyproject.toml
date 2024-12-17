@@ -6,9 +6,8 @@ build-backend = "hatchling.build"
 allow-direct-references = true
 
 [project]
-name = "gasp"
-dynamic = ["version"]
 name = "gasp-ssfp"
+dynamic = ["version"]
 authors = [
   { name="Michael Mendoza", email="askmichaelmendoza@gmail.com" },
 ]
