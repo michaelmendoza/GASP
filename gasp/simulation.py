@@ -7,7 +7,7 @@ import warnings
 warnings.simplefilter('ignore')
 
 
-def simulate_ssfp(width = 256, height = 256, npcs = 16, TRs = [5e-3, 10e-3, 20e-3], alpha = np.deg2rad(60), gradient = 2 * np.pi, phantom_type='circle', minTR=None, useSqueeze: bool=True, pcs=None, phantom_padding=8):
+def simulate_ssfp(width = 256, height = 256, npcs = 16, TRs = [5e-3, 10e-3, 20e-3], alpha = np.deg2rad(60), gradient = 2 * np.pi, gradientOffset = 0, f0 = 0, phantom_type='circle', minTR=None, useSqueeze: bool=True, pcs=None, phantom_padding=8):
     ''' Simulates bssfp with tissue phantom '''
 
     # Create phantoms, tissues, parameters
@@ -16,14 +16,13 @@ def simulate_ssfp(width = 256, height = 256, npcs = 16, TRs = [5e-3, 10e-3, 20e-
     size = mask.shape
     t1 = t['t1']
     t2 = t['t2']
-    f0 = t['f0']
     BetaMax = gradient
-    beta = np.linspace(-BetaMax, BetaMax, size[1])
+    beta = np.linspace(-BetaMax, BetaMax, size[1]) + gradientOffset
     if minTR is None:
         minTR = TRs[0]
     f = beta / minTR / (2 * np.pi) 
     f = np.tile(f, (size[0], 1))
-    f = f + f0
+    f = f + t['f0'] + f0
 
     # use explicitly provided PCs if given, otherwise assume linear distribution with npcs points
     if pcs is None:
@@ -120,6 +119,7 @@ def simulate_ssfp_simple(width = 256, height = 1,  T1=.035, T2 =.035, params=Non
     return M
 
 def train_gasp(M, D, clines=32, method:str = 'linear'):
+    ''' Deprecated '''
 
     # Create mask of phantom
     _ = np.sqrt(np.sum(np.abs(M)**2, axis=2))
