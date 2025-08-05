@@ -4,6 +4,7 @@ import numpy as np
 import numpy.typing as npt
 from skimage.filters import threshold_li
 from scipy.optimize import least_squares
+from itertools import combinations
 
 def run_gasp(I: npt.NDArray, An: npt.NDArray, method :str = "affine"):
     ''' Run GASP model on data with shape [Height, Width, PC x TRs] 
@@ -24,6 +25,7 @@ def run_gasp(I: npt.NDArray, An: npt.NDArray, method :str = "affine"):
     I = I.reshape((-1, I.shape[-1]))            # Collapse all dimensions last dimension
     npcs = I.shape[-1]
     data_shape = (height, width)
+    n_samples, n_features = I.shape
 
     if method == "linear":
         out = I.dot(An).reshape(data_shape)
@@ -32,6 +34,15 @@ def run_gasp(I: npt.NDArray, An: npt.NDArray, method :str = "affine"):
         out = I.dot(An).reshape(data_shape)
     elif method == "quad":
         I = np.column_stack((np.ones(I.shape[0]), I, I**2))
+        out = I.dot(An).reshape(data_shape)
+    elif method == "quad-cross":
+        I = np.column_stack((np.ones(I.shape[0]), I, I**2))
+        crosses = [                                               # cross-interaction terms
+            (I[:, i] * I[:, j]).reshape(-1, 1)
+            for i, j in combinations(range(n_features), 2)
+        ]
+        cross_block = np.hstack(crosses)          # shape: (n_samples, p(p-1)/2)
+        I = np.hstack((I, cross_block))          # final full-quadratic matrix
         out = I.dot(An).reshape(data_shape)
     elif method == "levmar-old":
         x0 = An[:npcs]              # Linear terms
@@ -47,7 +58,7 @@ def run_gasp(I: npt.NDArray, An: npt.NDArray, method :str = "affine"):
 
     return out
 
-def train_gasp(I: npt.NDArray, D: npt.NDArray, method: str = "affine"):
+def train_gasp(I: npt.NDArray, D: npt.NDArray, method: str = "affine", useL2: bool = False, lam: float = 1e-2):
     ''' Train GASP model on data with shape [Height, Width, PCs x TRs] and desired spectral profile D with shape [Width,]
     
     Parameters:
@@ -66,6 +77,7 @@ def train_gasp(I: npt.NDArray, D: npt.NDArray, method: str = "affine"):
     I = I.reshape((-1, I.shape[-1]))            # Collapse all dimensions last dimension
     npcs = I.shape[-1]
     data_shape = (height, width)
+    n_samples, n_features = I.shape
 
     # Repeat the desired spectral profile to match the number of PCs
     D = np.tile(D, (int(I.shape[0]/D.size),))
@@ -76,11 +88,24 @@ def train_gasp(I: npt.NDArray, D: npt.NDArray, method: str = "affine"):
         out = I.dot(A).reshape(data_shape)     # Reconstruct the image from the coefficients 
     elif method == "affine":
         I = np.column_stack((np.ones(I.shape[0]), I))  # Add a column of ones (b) to the data so data is from of y = a * x + b
-        A = np.linalg.lstsq(I, D, rcond=None)[0]  # Solves a linear system of form: D = A * I (i.e. y = a * x)
+        if useL2:
+            A = l2_regularization(I, D)
+        else:
+            A = np.linalg.lstsq(I, D, rcond=None)[0]  # Solves a linear system of form: D = A * I (i.e. y = a * x)
         out = I.dot(A).reshape(data_shape)     # Reconstruct the image from the coefficients 
     elif method == "quad":
         I_quad = np.column_stack((np.ones(I.shape[0]), I, I**2))  # Add columns for constant, linear, and quadratic terms
         A = np.linalg.lstsq(I_quad, D, rcond=None)[0]  # Solves a quadratic system of form: D = a * I^2 + b * I + c
+        out = I_quad.dot(A).reshape(data_shape) 
+    elif method == "quad-cross":
+        I_quad = np.column_stack((np.ones(I.shape[0]), I, I**2))  # Add columns for constant, linear, and quadratic terms
+        crosses = [                                               # cross-interaction terms
+            (I[:, i] * I[:, j]).reshape(-1, 1)
+            for i, j in combinations(range(n_features), 2)
+        ]
+        cross_block = np.hstack(crosses)          # shape: (n_samples, p(p-1)/2)
+        I_quad = np.hstack((I_quad, cross_block)) # final full-quadratic matrix
+        A = np.linalg.lstsq(I_quad, D, rcond=None)[0]  # Solves a quadratic system of form: D = a * I^2 + b * I + c + crosses
         out = I_quad.dot(A).reshape(data_shape) 
     elif method == 'levmar-old':
         def residuals(y):
@@ -218,3 +243,34 @@ def process_data_for_gasp(M, useMask=False, useCalibration=False, n_lines=2):
         data = extract_centered_subset(data, n_lines)
 
     return data
+
+def l2_regularization( X: npt.NDArray, y: npt.NDArray, lam: float = 1e-2, *, penalise_bias: bool = False
+) -> npt.NDArray:
+    """
+    Solve   argmin_A  ||X A - y||²₂ + λ ||A||²₂     (ridge regression)
+
+    Parameters
+    ----------
+    X : NDArray, shape (n_samples, n_terms)
+        Design matrix.
+    y : NDArray, shape (n_samples,)
+        Target vector (real or complex).
+    lam : float, default 1e-2
+        Ridge penalty λ (tune via CV; see previous answer).
+    penalise_bias : bool, default False
+        If True the first coefficient (bias term) is also regularised.
+
+    Returns
+    -------
+    A : NDArray, shape (n_terms,)
+        Fitted coefficients.
+    """
+    n_terms = X.shape[1]
+    L = np.eye(n_terms)
+    if not penalise_bias:
+        L[0, 0] = 0.0
+
+    # (XᵀX + λL) A = Xᵀ y
+    A = np.linalg.solve(X.T @ X + lam * L, X.T @ y)
+    return A
+
