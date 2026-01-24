@@ -10,6 +10,8 @@ __pycache__/
 # IDE-related files
 .idea/
 .DS_Store
+.claude/
+.vscode/
 __MACOSX/
 opt-res.log
 
@@ -19,3 +21,4 @@ src/
 data/
 notebooks/images
 claude/
+models/
