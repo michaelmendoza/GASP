@@ -88,6 +88,95 @@ def get_n_coeffs(n_acquisitions: int, method: str) -> int:
     raise ValueError(f"Unknown method '{method}'")
 
 
+class LearnedGASP(nn.Module):
+    """
+    Learned GASP: Optimize global coefficients via gradient descent over diverse training data.
+
+    Unlike standard GASP which fits coefficients on a single T1/T2 using least squares,
+    LearnedGASP learns coefficients that work well across a range of tissue types.
+
+    This serves as an ablation: comparing LearnedGASP vs ConditionalGASP shows the
+    benefit of per-sample adaptive coefficients vs a single global set.
+
+    Args:
+        n_acquisitions: Number of acquisition points (phase-cycles x TRs)
+        method: GASP method ('linear', 'affine', 'quad', 'quad-cross')
+    """
+
+    def __init__(
+        self,
+        n_acquisitions: int,
+        method: str = "affine",
+    ):
+        _check_torch()
+        super().__init__()
+
+        self.n_acquisitions = n_acquisitions
+        self.method = method
+        self.n_coeffs = get_n_coeffs(n_acquisitions, method)
+
+        # Learnable coefficients (real and imaginary parts)
+        self.A_real = nn.Parameter(torch.randn(self.n_coeffs) * 0.01)
+        self.A_imag = nn.Parameter(torch.randn(self.n_coeffs) * 0.01)
+
+    @property
+    def coefficients(self) -> "torch.Tensor":
+        """Get complex coefficients."""
+        return torch.complex(self.A_real, self.A_imag)
+
+    def forward(self, x: "torch.Tensor") -> "torch.Tensor":
+        """
+        Apply GASP with learned coefficients.
+
+        Args:
+            x: Complex signal tensor [batch, n_acquisitions]
+
+        Returns:
+            output: GASP output [batch]
+        """
+        # Build design matrix
+        if torch.is_complex(x):
+            Phi = design_matrix_torch(x, self.method)
+        else:
+            x_complex = torch.complex(
+                x[..., :self.n_acquisitions],
+                x[..., self.n_acquisitions:]
+            )
+            Phi = design_matrix_torch(x_complex, self.method)
+
+        # Apply coefficients: output = Phi @ A
+        A = self.coefficients
+        output = (Phi * A).sum(dim=-1)
+        return output
+
+    def get_numpy_coefficients(self) -> npt.NDArray:
+        """Get coefficients as numpy array for use with standard GASP."""
+        with torch.no_grad():
+            return self.coefficients.cpu().numpy()
+
+    def save(self, path: str | Path):
+        """Save model weights and config."""
+        _check_torch()
+        path = Path(path)
+        torch.save({
+            'state_dict': self.state_dict(),
+            'config': {
+                'n_acquisitions': self.n_acquisitions,
+                'method': self.method,
+            }
+        }, path)
+
+    @classmethod
+    def load(cls, path: str | Path, device: str = 'cpu') -> "LearnedGASP":
+        """Load model from saved checkpoint."""
+        _check_torch()
+        path = Path(path)
+        checkpoint = torch.load(path, map_location=device, weights_only=False)
+        model = cls(**checkpoint['config'])
+        model.load_state_dict(checkpoint['state_dict'])
+        return model
+
+
 class ConditionalGASP(nn.Module):
     """
     Conditional GASP: Neural network that predicts tissue-specific polynomial coefficients.

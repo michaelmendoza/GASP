@@ -140,6 +140,57 @@ This covers the range from short-$T_2$ tissues (tendon: $T_2/T_1 \approx 0.01$) 
 
 **Key advantage**: Since training data is simulated, we have access to unlimited diverse samples. Fresh batches are generated each epoch, preventing overfitting.
 
+### 2.6 Latent Representation and Continuous Coefficient Prediction
+
+A key conceptual distinction of Conditional GASP is that it does **not** select from or interpolate between a discrete set of pre-computed coefficient vectors. Instead, it learns a **continuous mapping** from a compressed tissue representation to coefficients.
+
+#### The Latent Space as Tissue Encoding
+
+The encoder network compresses the high-dimensional input signal $\mathbf{x} \in \mathbb{C}^N$ into a low-dimensional latent vector $\mathbf{z} \in \mathbb{R}^d$ (typically $d=16$). This latent space serves as a learned, continuous representation of tissue-relevant signal properties.
+
+Each dimension of $\mathbf{z}$ captures some learned feature of the input signal—these features are not explicitly specified but emerge during training. Empirically, the network learns to encode properties related to:
+
+- Band profile shape (influenced by $T_2/T_1$ ratio)
+- Signal amplitude characteristics
+- Phase cycling response patterns
+
+Signals from tissues with similar relaxation properties will map to nearby points in this latent space, while dissimilar tissues map to distant points.
+
+#### Continuous Coefficient Prediction
+
+The coefficient predictor implements a smooth, continuous function:
+
+$$f_\phi: \mathbb{R}^d \rightarrow \mathbb{C}^K$$
+
+This function maps **any point** in the $d$-dimensional latent space to a corresponding set of $K$ polynomial coefficients. Because neural networks with smooth activations (GELU) implement continuous functions, small changes in $\mathbf{z}$ produce small changes in the predicted coefficients $\mathbf{A}$.
+
+The network learns this mapping by observing many simulated tissue examples during training, spanning the full $T_1$, $T_2/T_1$ parameter space. After training, it can output sensible coefficients for any tissue—including parameter combinations it never explicitly encountered—because the learned function is smooth and continuous. This is the key to generalization: the model does not memorize coefficient sets for specific tissues, but learns the underlying relationship between tissue properties and optimal coefficients.
+
+This is fundamentally different from:
+
+| Approach | Description | Limitation |
+|----------|-------------|------------|
+| Single coefficient set | One $\mathbf{A}$ for all voxels | Cannot adapt to tissue variation |
+| Discrete selection | Choose from $M$ pre-computed sets | Limited to $M$ tissue types |
+| Interpolation | Blend between $M$ prototype sets | Assumes linear coefficient space |
+| **Continuous prediction** | Learn $f: \mathbf{z} \rightarrow \mathbf{A}$ | Arbitrary tissue-adaptive coefficients |
+
+#### Effective Dimensionality
+
+While the latent dimension $d$ determines the capacity of the tissue encoding, it does **not** limit the model to $d$ distinct coefficient sets. The coefficient predictor can generate an effectively infinite variety of coefficient vectors—one unique set for every point in the continuous $d$-dimensional latent manifold.
+
+For a typical image with $256 \times 256$ voxels, the model predicts 65,536 potentially distinct coefficient vectors, each tailored to the inferred tissue properties of that voxel.
+
+#### Why Compress to a Latent Space?
+
+The latent bottleneck serves several purposes:
+
+1. **Regularization**: Forces the network to extract only the most relevant tissue information, discarding noise and acquisition-specific variation
+
+2. **Generalization**: A smooth, low-dimensional manifold generalizes better to unseen tissue combinations than direct signal-to-coefficient mapping
+
+3. **Interpretability**: The latent space can be visualized and analyzed to understand what tissue properties the model has learned to distinguish
+
 ## 3. Theoretical Analysis
 
 ### 3.1 Expressiveness

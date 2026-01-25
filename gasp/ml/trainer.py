@@ -26,7 +26,7 @@ try:
 except ImportError:
     TQDM_AVAILABLE = False
 
-from .conditional_gasp import ConditionalGASP, design_matrix_torch
+from .conditional_gasp import ConditionalGASP, LearnedGASP, design_matrix_torch
 from .data_generator import generate_training_batch, ConditionalGASPDataset
 from .losses import conditional_gasp_loss, ConditionalGASPLoss
 from gasp.simulation import SSFPParams
@@ -327,6 +327,115 @@ def train_conditional_gasp(
     # Load best model if saved
     if save_best and save_path and Path(save_path).exists():
         model = ConditionalGASP.load(save_path, device=device)
+
+    return model, history
+
+
+def train_learned_gasp(
+    params: SSFPParams,
+    target_profile: npt.NDArray,
+    n_epochs: int = 100,
+    batch_size: int = 32,
+    n_batches_per_epoch: int = 50,
+    learning_rate: float = 1e-2,
+    method: str = "affine",
+    t1_range: tuple[float, float] = (0.1, 4.0),
+    t2_t1_ratio_range: tuple[float, float] = (0.01, 0.5),
+    width: int = 256,
+    noise_sigma: float = 0.005,
+    device: str = None,
+    verbose: bool = True,
+) -> tuple[LearnedGASP, TrainingHistory]:
+    """
+    Train a LearnedGASP model (global coefficients via gradient descent).
+
+    Unlike standard GASP which fits on a single T1/T2, this learns coefficients
+    that work well across a range of tissue types.
+
+    Args:
+        params: SSFPParams object with acquisition parameters
+        target_profile: Target spectral profile [width]
+        n_epochs: Number of training epochs
+        batch_size: Batch size (number of T1/T2 samples per batch)
+        n_batches_per_epoch: Number of batches per epoch
+        learning_rate: Learning rate (typically higher than ConditionalGASP)
+        method: GASP method ('linear', 'affine', 'quad', 'quad-cross')
+        t1_range: (min, max) T1 values in seconds
+        t2_t1_ratio_range: (min, max) T2/T1 ratio values
+        width: Number of frequency points
+        noise_sigma: Standard deviation of training noise
+        device: PyTorch device ('cuda', 'cpu', or None for auto)
+        verbose: Print training progress
+
+    Returns:
+        model: Trained LearnedGASP model
+        history: TrainingHistory with loss curves
+    """
+    _check_torch()
+
+    if device is None:
+        device = 'cuda' if torch.cuda.is_available() else 'cpu'
+    if verbose:
+        print(f"Training LearnedGASP on device: {device}")
+
+    n_acquisitions = params.length
+
+    model = LearnedGASP(
+        n_acquisitions=n_acquisitions,
+        method=method,
+    ).to(device)
+
+    if verbose:
+        n_params = sum(p.numel() for p in model.parameters())
+        print(f"Model parameters: {n_params:,} (just coefficients)")
+
+    target_profile_t = torch.from_numpy(target_profile).float().to(device)
+
+    optimizer = optim.Adam(model.parameters(), lr=learning_rate)
+    scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, n_epochs)
+
+    history = TrainingHistory()
+
+    epoch_iterator = range(n_epochs)
+    if verbose and TQDM_AVAILABLE:
+        epoch_iterator = tqdm(epoch_iterator, desc="Training LearnedGASP")
+
+    for epoch in epoch_iterator:
+        model.train()
+        total_loss = 0
+
+        for _ in range(n_batches_per_epoch):
+            signals, _ = generate_training_batch(
+                batch_size, params, t1_range, t2_t1_ratio_range,
+                width=width, noise_sigma=noise_sigma
+            )
+
+            signals = torch.from_numpy(signals).to(device)
+            batch, w, n_acq = signals.shape
+            signals_flat = signals.reshape(batch * w, n_acq)
+
+            output = model(signals_flat)
+            target_tiled = target_profile_t.unsqueeze(0).expand(batch, -1).reshape(-1)
+
+            loss = torch.mean((output.abs() - target_tiled) ** 2)
+
+            optimizer.zero_grad()
+            loss.backward()
+            optimizer.step()
+
+            total_loss += loss.item()
+
+        scheduler.step()
+
+        avg_loss = total_loss / n_batches_per_epoch
+        history.update(epoch, {'train_loss': avg_loss, 'val_loss': avg_loss,
+                               'profile_loss': avg_loss, 'l2_loss': 0, 'smooth_loss': 0})
+
+        if verbose and not TQDM_AVAILABLE and epoch % 10 == 0:
+            print(f"Epoch {epoch}: loss={avg_loss:.6f}")
+
+    if verbose:
+        print(f"Training complete. Final loss: {avg_loss:.6f}")
 
     return model, history
 
