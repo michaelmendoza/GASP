@@ -68,7 +68,7 @@ def generate_signal_simple(
 
     # Generate signal for each acquisition
     n_acq = params.length
-    signal = np.empty((width, n_acq), dtype=np.complex128)
+    signal = np.empty((width, n_acq), dtype=np.complex64)
 
     for ii in range(n_acq):
         alpha = params.getAlpha(ii)
@@ -110,8 +110,8 @@ def generate_training_batch(
         tissue_params: Tissue parameters [batch_size, 3] (T1, T2, T2/T1 ratio)
     """
     n_acq = params.length
-    signals = np.empty((batch_size, width, n_acq), dtype=np.complex128)
-    tissue_params = np.empty((batch_size, 3))
+    signals = np.empty((batch_size, width, n_acq), dtype=np.complex64)
+    tissue_params = np.empty((batch_size, 3), dtype=np.float32)
 
     for i in range(batch_size):
         # Sample T1 uniformly
@@ -217,8 +217,8 @@ def sample_tissue_specific(
         tissue_names = list(TISSUE_PARAMS.keys())
 
     n_acq = params.length
-    signals = np.empty((batch_size, width, n_acq), dtype=np.complex128)
-    tissue_params = np.empty((batch_size, 3))
+    signals = np.empty((batch_size, width, n_acq), dtype=np.complex64)
+    tissue_params = np.empty((batch_size, 3), dtype=np.float32)
     tissue_labels = []
 
     for i in range(batch_size):

@@ -173,6 +173,7 @@ class LearnedGASP(nn.Module):
         path = Path(path)
         checkpoint = torch.load(path, map_location=device, weights_only=False)
         model = cls(**checkpoint['config'])
+        model = model.to(device)  # Move model to device before loading state dict
         model.load_state_dict(checkpoint['state_dict'])
         return model
 
@@ -339,6 +340,7 @@ class ConditionalGASP(nn.Module):
         path = Path(path)
         checkpoint = torch.load(path, map_location=device, weights_only=False)
         model = cls(**checkpoint['config'])
+        model = model.to(device)  # Move model to device before loading state dict
         model.load_state_dict(checkpoint['state_dict'])
         return model
 
