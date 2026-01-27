@@ -1,0 +1,306 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 600">
+  <defs>
+    <linearGradient id="biasGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#F472B6;stop-opacity:1"/>
+      <stop offset="100%" style="stop-color:#EC4899;stop-opacity:1"/>
+    </linearGradient>
+    <linearGradient id="linearGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#60A5FA;stop-opacity:1"/>
+      <stop offset="100%" style="stop-color:#3B82F6;stop-opacity:1"/>
+    </linearGradient>
+    <linearGradient id="quadGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#34D399;stop-opacity:1"/>
+      <stop offset="100%" style="stop-color:#10B981;stop-opacity:1"/>
+    </linearGradient>
+    <linearGradient id="crossGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#FBBF24;stop-opacity:1"/>
+      <stop offset="100%" style="stop-color:#F59E0B;stop-opacity:1"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="900" height="600" fill="#F9FAFB"/>
+
+  <!-- Title -->
+  <text x="450" y="35" font-family="Arial, sans-serif" font-size="22" font-weight="bold" fill="#111827" text-anchor="middle">Design Matrix Φ Structure</text>
+  <text x="450" y="58" font-family="Arial, sans-serif" font-size="14" fill="#6B7280" text-anchor="middle">Visualization for p = 3 features (e.g., 3 TRs with combined PCs)</text>
+
+  <!-- Legend -->
+  <g transform="translate(620, 75)">
+    <rect x="0" y="0" width="260" height="100" rx="6" fill="white" stroke="#E5E7EB" stroke-width="1"/>
+    <text x="130" y="20" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#374151" text-anchor="middle">Legend</text>
+
+    <rect x="15" y="32" width="20" height="14" rx="2" fill="url(#biasGrad)"/>
+    <text x="45" y="44" font-family="Arial, sans-serif" font-size="11" fill="#4B5563">Bias (1)</text>
+
+    <rect x="130" y="32" width="20" height="14" rx="2" fill="url(#linearGrad)"/>
+    <text x="160" y="44" font-family="Arial, sans-serif" font-size="11" fill="#4B5563">Linear (xᵢ)</text>
+
+    <rect x="15" y="55" width="20" height="14" rx="2" fill="url(#quadGrad)"/>
+    <text x="45" y="67" font-family="Arial, sans-serif" font-size="11" fill="#4B5563">Quadratic (xᵢ²)</text>
+
+    <rect x="130" y="55" width="20" height="14" rx="2" fill="url(#crossGrad)"/>
+    <text x="160" y="67" font-family="Arial, sans-serif" font-size="11" fill="#4B5563">Cross (xᵢxⱼ)</text>
+
+    <text x="130" y="88" font-family="Arial, sans-serif" font-size="10" fill="#9CA3AF" text-anchor="middle">n = number of pixels (H×W)</text>
+  </g>
+
+  <!-- ============ LINEAR ============ -->
+  <g transform="translate(50, 100)">
+    <text x="0" y="0" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="#1F2937">Linear</text>
+    <text x="0" y="18" font-family="monospace" font-size="11" fill="#6B7280">method='linear'</text>
+
+    <!-- Matrix bracket left -->
+    <path d="M 0 35 L 0 130 M 0 35 L 8 35 M 0 130 L 8 130" stroke="#374151" stroke-width="2" fill="none"/>
+
+    <!-- Matrix content -->
+    <g transform="translate(15, 40)">
+      <!-- Header row -->
+      <text x="20" y="-5" font-family="Arial, sans-serif" font-size="9" fill="#6B7280" text-anchor="middle">x₁</text>
+      <text x="55" y="-5" font-family="Arial, sans-serif" font-size="9" fill="#6B7280" text-anchor="middle">x₂</text>
+      <text x="90" y="-5" font-family="Arial, sans-serif" font-size="9" fill="#6B7280" text-anchor="middle">x₃</text>
+
+      <!-- Row 1 -->
+      <rect x="5" y="5" width="30" height="18" rx="2" fill="url(#linearGrad)"/>
+      <rect x="40" y="5" width="30" height="18" rx="2" fill="url(#linearGrad)"/>
+      <rect x="75" y="5" width="30" height="18" rx="2" fill="url(#linearGrad)"/>
+
+      <!-- Row 2 -->
+      <rect x="5" y="28" width="30" height="18" rx="2" fill="url(#linearGrad)"/>
+      <rect x="40" y="28" width="30" height="18" rx="2" fill="url(#linearGrad)"/>
+      <rect x="75" y="28" width="30" height="18" rx="2" fill="url(#linearGrad)"/>
+
+      <!-- Dots -->
+      <text x="55" y="60" font-family="Arial, sans-serif" font-size="14" fill="#6B7280" text-anchor="middle">⋮</text>
+
+      <!-- Row n -->
+      <rect x="5" y="65" width="30" height="18" rx="2" fill="url(#linearGrad)"/>
+      <rect x="40" y="65" width="30" height="18" rx="2" fill="url(#linearGrad)"/>
+      <rect x="75" y="65" width="30" height="18" rx="2" fill="url(#linearGrad)"/>
+    </g>
+
+    <!-- Matrix bracket right -->
+    <path d="M 125 35 L 125 130 M 125 35 L 117 35 M 125 130 L 117 130" stroke="#374151" stroke-width="2" fill="none"/>
+
+    <!-- Dimensions -->
+    <text x="62" y="150" font-family="Arial, sans-serif" font-size="11" fill="#4B5563" text-anchor="middle">[n × p]</text>
+    <text x="62" y="165" font-family="Arial, sans-serif" font-size="10" fill="#9CA3AF" text-anchor="middle">= [n × 3]</text>
+  </g>
+
+  <!-- ============ AFFINE ============ -->
+  <g transform="translate(230, 100)">
+    <text x="0" y="0" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="#1F2937">Affine</text>
+    <text x="0" y="18" font-family="monospace" font-size="11" fill="#6B7280">method='affine'</text>
+
+    <!-- Matrix bracket left -->
+    <path d="M 0 35 L 0 130 M 0 35 L 8 35 M 0 130 L 8 130" stroke="#374151" stroke-width="2" fill="none"/>
+
+    <!-- Matrix content -->
+    <g transform="translate(15, 40)">
+      <!-- Header row -->
+      <text x="17" y="-5" font-family="Arial, sans-serif" font-size="9" fill="#6B7280" text-anchor="middle">1</text>
+      <text x="52" y="-5" font-family="Arial, sans-serif" font-size="9" fill="#6B7280" text-anchor="middle">x₁</text>
+      <text x="87" y="-5" font-family="Arial, sans-serif" font-size="9" fill="#6B7280" text-anchor="middle">x₂</text>
+      <text x="122" y="-5" font-family="Arial, sans-serif" font-size="9" fill="#6B7280" text-anchor="middle">x₃</text>
+
+      <!-- Row 1 -->
+      <rect x="5" y="5" width="25" height="18" rx="2" fill="url(#biasGrad)"/>
+      <rect x="35" y="5" width="30" height="18" rx="2" fill="url(#linearGrad)"/>
+      <rect x="70" y="5" width="30" height="18" rx="2" fill="url(#linearGrad)"/>
+      <rect x="105" y="5" width="30" height="18" rx="2" fill="url(#linearGrad)"/>
+
+      <!-- Row 2 -->
+      <rect x="5" y="28" width="25" height="18" rx="2" fill="url(#biasGrad)"/>
+      <rect x="35" y="28" width="30" height="18" rx="2" fill="url(#linearGrad)"/>
+      <rect x="70" y="28" width="30" height="18" rx="2" fill="url(#linearGrad)"/>
+      <rect x="105" y="28" width="30" height="18" rx="2" fill="url(#linearGrad)"/>
+
+      <!-- Dots -->
+      <text x="72" y="60" font-family="Arial, sans-serif" font-size="14" fill="#6B7280" text-anchor="middle">⋮</text>
+
+      <!-- Row n -->
+      <rect x="5" y="65" width="25" height="18" rx="2" fill="url(#biasGrad)"/>
+      <rect x="35" y="65" width="30" height="18" rx="2" fill="url(#linearGrad)"/>
+      <rect x="70" y="65" width="30" height="18" rx="2" fill="url(#linearGrad)"/>
+      <rect x="105" y="65" width="30" height="18" rx="2" fill="url(#linearGrad)"/>
+    </g>
+
+    <!-- Matrix bracket right -->
+    <path d="M 155 35 L 155 130 M 155 35 L 147 35 M 155 130 L 147 130" stroke="#374151" stroke-width="2" fill="none"/>
+
+    <!-- Dimensions -->
+    <text x="77" y="150" font-family="Arial, sans-serif" font-size="11" fill="#4B5563" text-anchor="middle">[n × (1+p)]</text>
+    <text x="77" y="165" font-family="Arial, sans-serif" font-size="10" fill="#9CA3AF" text-anchor="middle">= [n × 4]</text>
+  </g>
+
+  <!-- ============ QUADRATIC ============ -->
+  <g transform="translate(50, 300)">
+    <text x="0" y="0" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="#1F2937">Quadratic</text>
+    <text x="0" y="18" font-family="monospace" font-size="11" fill="#6B7280">method='quad'</text>
+
+    <!-- Matrix bracket left -->
+    <path d="M 0 35 L 0 130 M 0 35 L 8 35 M 0 130 L 8 130" stroke="#374151" stroke-width="2" fill="none"/>
+
+    <!-- Matrix content -->
+    <g transform="translate(12, 40)">
+      <!-- Header row -->
+      <text x="12" y="-5" font-family="Arial, sans-serif" font-size="8" fill="#6B7280" text-anchor="middle">1</text>
+      <text x="37" y="-5" font-family="Arial, sans-serif" font-size="8" fill="#6B7280" text-anchor="middle">x₁</text>
+      <text x="62" y="-5" font-family="Arial, sans-serif" font-size="8" fill="#6B7280" text-anchor="middle">x₂</text>
+      <text x="87" y="-5" font-family="Arial, sans-serif" font-size="8" fill="#6B7280" text-anchor="middle">x₃</text>
+      <text x="112" y="-5" font-family="Arial, sans-serif" font-size="8" fill="#6B7280" text-anchor="middle">x₁²</text>
+      <text x="137" y="-5" font-family="Arial, sans-serif" font-size="8" fill="#6B7280" text-anchor="middle">x₂²</text>
+      <text x="162" y="-5" font-family="Arial, sans-serif" font-size="8" fill="#6B7280" text-anchor="middle">x₃²</text>
+
+      <!-- Row 1 -->
+      <rect x="2" y="5" width="20" height="18" rx="2" fill="url(#biasGrad)"/>
+      <rect x="27" y="5" width="20" height="18" rx="2" fill="url(#linearGrad)"/>
+      <rect x="52" y="5" width="20" height="18" rx="2" fill="url(#linearGrad)"/>
+      <rect x="77" y="5" width="20" height="18" rx="2" fill="url(#linearGrad)"/>
+      <rect x="102" y="5" width="20" height="18" rx="2" fill="url(#quadGrad)"/>
+      <rect x="127" y="5" width="20" height="18" rx="2" fill="url(#quadGrad)"/>
+      <rect x="152" y="5" width="20" height="18" rx="2" fill="url(#quadGrad)"/>
+
+      <!-- Row 2 -->
+      <rect x="2" y="28" width="20" height="18" rx="2" fill="url(#biasGrad)"/>
+      <rect x="27" y="28" width="20" height="18" rx="2" fill="url(#linearGrad)"/>
+      <rect x="52" y="28" width="20" height="18" rx="2" fill="url(#linearGrad)"/>
+      <rect x="77" y="28" width="20" height="18" rx="2" fill="url(#linearGrad)"/>
+      <rect x="102" y="28" width="20" height="18" rx="2" fill="url(#quadGrad)"/>
+      <rect x="127" y="28" width="20" height="18" rx="2" fill="url(#quadGrad)"/>
+      <rect x="152" y="28" width="20" height="18" rx="2" fill="url(#quadGrad)"/>
+
+      <!-- Dots -->
+      <text x="87" y="60" font-family="Arial, sans-serif" font-size="14" fill="#6B7280" text-anchor="middle">⋮</text>
+
+      <!-- Row n -->
+      <rect x="2" y="65" width="20" height="18" rx="2" fill="url(#biasGrad)"/>
+      <rect x="27" y="65" width="20" height="18" rx="2" fill="url(#linearGrad)"/>
+      <rect x="52" y="65" width="20" height="18" rx="2" fill="url(#linearGrad)"/>
+      <rect x="77" y="65" width="20" height="18" rx="2" fill="url(#linearGrad)"/>
+      <rect x="102" y="65" width="20" height="18" rx="2" fill="url(#quadGrad)"/>
+      <rect x="127" y="65" width="20" height="18" rx="2" fill="url(#quadGrad)"/>
+      <rect x="152" y="65" width="20" height="18" rx="2" fill="url(#quadGrad)"/>
+    </g>
+
+    <!-- Matrix bracket right -->
+    <path d="M 190 35 L 190 130 M 190 35 L 182 35 M 190 130 L 182 130" stroke="#374151" stroke-width="2" fill="none"/>
+
+    <!-- Dimensions -->
+    <text x="95" y="150" font-family="Arial, sans-serif" font-size="11" fill="#4B5563" text-anchor="middle">[n × (1+2p)]</text>
+    <text x="95" y="165" font-family="Arial, sans-serif" font-size="10" fill="#9CA3AF" text-anchor="middle">= [n × 7]</text>
+  </g>
+
+  <!-- ============ QUAD-CROSS ============ -->
+  <g transform="translate(300, 300)">
+    <text x="0" y="0" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="#1F2937">Quad-Cross</text>
+    <text x="0" y="18" font-family="monospace" font-size="11" fill="#6B7280">method='quad-cross'</text>
+
+    <!-- Matrix bracket left -->
+    <path d="M 0 35 L 0 130 M 0 35 L 8 35 M 0 130 L 8 130" stroke="#374151" stroke-width="2" fill="none"/>
+
+    <!-- Matrix content -->
+    <g transform="translate(10, 40)">
+      <!-- Header row -->
+      <text x="10" y="-5" font-family="Arial, sans-serif" font-size="7" fill="#6B7280" text-anchor="middle">1</text>
+      <text x="28" y="-5" font-family="Arial, sans-serif" font-size="7" fill="#6B7280" text-anchor="middle">x₁</text>
+      <text x="46" y="-5" font-family="Arial, sans-serif" font-size="7" fill="#6B7280" text-anchor="middle">x₂</text>
+      <text x="64" y="-5" font-family="Arial, sans-serif" font-size="7" fill="#6B7280" text-anchor="middle">x₃</text>
+      <text x="82" y="-5" font-family="Arial, sans-serif" font-size="7" fill="#6B7280" text-anchor="middle">x₁²</text>
+      <text x="100" y="-5" font-family="Arial, sans-serif" font-size="7" fill="#6B7280" text-anchor="middle">x₂²</text>
+      <text x="118" y="-5" font-family="Arial, sans-serif" font-size="7" fill="#6B7280" text-anchor="middle">x₃²</text>
+      <text x="139" y="-5" font-family="Arial, sans-serif" font-size="7" fill="#6B7280" text-anchor="middle">x₁x₂</text>
+      <text x="160" y="-5" font-family="Arial, sans-serif" font-size="7" fill="#6B7280" text-anchor="middle">x₁x₃</text>
+      <text x="181" y="-5" font-family="Arial, sans-serif" font-size="7" fill="#6B7280" text-anchor="middle">x₂x₃</text>
+
+      <!-- Row 1 -->
+      <rect x="2" y="5" width="16" height="18" rx="2" fill="url(#biasGrad)"/>
+      <rect x="20" y="5" width="16" height="18" rx="2" fill="url(#linearGrad)"/>
+      <rect x="38" y="5" width="16" height="18" rx="2" fill="url(#linearGrad)"/>
+      <rect x="56" y="5" width="16" height="18" rx="2" fill="url(#linearGrad)"/>
+      <rect x="74" y="5" width="16" height="18" rx="2" fill="url(#quadGrad)"/>
+      <rect x="92" y="5" width="16" height="18" rx="2" fill="url(#quadGrad)"/>
+      <rect x="110" y="5" width="16" height="18" rx="2" fill="url(#quadGrad)"/>
+      <rect x="128" y="5" width="20" height="18" rx="2" fill="url(#crossGrad)"/>
+      <rect x="150" y="5" width="20" height="18" rx="2" fill="url(#crossGrad)"/>
+      <rect x="172" y="5" width="20" height="18" rx="2" fill="url(#crossGrad)"/>
+
+      <!-- Row 2 -->
+      <rect x="2" y="28" width="16" height="18" rx="2" fill="url(#biasGrad)"/>
+      <rect x="20" y="28" width="16" height="18" rx="2" fill="url(#linearGrad)"/>
+      <rect x="38" y="28" width="16" height="18" rx="2" fill="url(#linearGrad)"/>
+      <rect x="56" y="28" width="16" height="18" rx="2" fill="url(#linearGrad)"/>
+      <rect x="74" y="28" width="16" height="18" rx="2" fill="url(#quadGrad)"/>
+      <rect x="92" y="28" width="16" height="18" rx="2" fill="url(#quadGrad)"/>
+      <rect x="110" y="28" width="16" height="18" rx="2" fill="url(#quadGrad)"/>
+      <rect x="128" y="28" width="20" height="18" rx="2" fill="url(#crossGrad)"/>
+      <rect x="150" y="28" width="20" height="18" rx="2" fill="url(#crossGrad)"/>
+      <rect x="172" y="28" width="20" height="18" rx="2" fill="url(#crossGrad)"/>
+
+      <!-- Dots -->
+      <text x="100" y="60" font-family="Arial, sans-serif" font-size="14" fill="#6B7280" text-anchor="middle">⋮</text>
+
+      <!-- Row n -->
+      <rect x="2" y="65" width="16" height="18" rx="2" fill="url(#biasGrad)"/>
+      <rect x="20" y="65" width="16" height="18" rx="2" fill="url(#linearGrad)"/>
+      <rect x="38" y="65" width="16" height="18" rx="2" fill="url(#linearGrad)"/>
+      <rect x="56" y="65" width="16" height="18" rx="2" fill="url(#linearGrad)"/>
+      <rect x="74" y="65" width="16" height="18" rx="2" fill="url(#quadGrad)"/>
+      <rect x="92" y="65" width="16" height="18" rx="2" fill="url(#quadGrad)"/>
+      <rect x="110" y="65" width="16" height="18" rx="2" fill="url(#quadGrad)"/>
+      <rect x="128" y="65" width="20" height="18" rx="2" fill="url(#crossGrad)"/>
+      <rect x="150" y="65" width="20" height="18" rx="2" fill="url(#crossGrad)"/>
+      <rect x="172" y="65" width="20" height="18" rx="2" fill="url(#crossGrad)"/>
+    </g>
+
+    <!-- Matrix bracket right -->
+    <path d="M 205 35 L 205 130 M 205 35 L 197 35 M 205 130 L 197 130" stroke="#374151" stroke-width="2" fill="none"/>
+
+    <!-- Dimensions -->
+    <text x="102" y="150" font-family="Arial, sans-serif" font-size="11" fill="#4B5563" text-anchor="middle">[n × (1+2p+C(p,2))]</text>
+    <text x="102" y="165" font-family="Arial, sans-serif" font-size="10" fill="#9CA3AF" text-anchor="middle">= [n × 10]</text>
+  </g>
+
+  <!-- Formula Summary Box -->
+  <g transform="translate(570, 300)">
+    <rect x="0" y="0" width="300" height="170" rx="8" fill="white" stroke="#D1D5DB" stroke-width="1"/>
+    <text x="150" y="25" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#1F2937" text-anchor="middle">Term Count Summary</text>
+
+    <line x1="20" y1="38" x2="280" y2="38" stroke="#E5E7EB" stroke-width="1"/>
+
+    <text x="30" y="60" font-family="Arial, sans-serif" font-size="12" fill="#4B5563">Linear:</text>
+    <text x="150" y="60" font-family="monospace" font-size="12" fill="#6B7280">p</text>
+    <text x="220" y="60" font-family="Arial, sans-serif" font-size="11" fill="#9CA3AF">= 3</text>
+
+    <text x="30" y="85" font-family="Arial, sans-serif" font-size="12" fill="#4B5563">Affine:</text>
+    <text x="150" y="85" font-family="monospace" font-size="12" fill="#6B7280">1 + p</text>
+    <text x="220" y="85" font-family="Arial, sans-serif" font-size="11" fill="#9CA3AF">= 4</text>
+
+    <text x="30" y="110" font-family="Arial, sans-serif" font-size="12" fill="#4B5563">Quad:</text>
+    <text x="150" y="110" font-family="monospace" font-size="12" fill="#6B7280">1 + 2p</text>
+    <text x="220" y="110" font-family="Arial, sans-serif" font-size="11" fill="#9CA3AF">= 7</text>
+
+    <text x="30" y="135" font-family="Arial, sans-serif" font-size="12" fill="#4B5563">Quad-Cross:</text>
+    <text x="150" y="135" font-family="monospace" font-size="11" fill="#6B7280">1+2p+p(p-1)/2</text>
+    <text x="220" y="135" font-family="Arial, sans-serif" font-size="11" fill="#9CA3AF">= 10</text>
+
+    <line x1="20" y1="148" x2="280" y2="148" stroke="#E5E7EB" stroke-width="1"/>
+    <text x="150" y="165" font-family="Arial, sans-serif" font-size="10" fill="#9CA3AF" text-anchor="middle" font-style="italic">where p = number of input features</text>
+  </g>
+
+  <!-- Annotations -->
+  <g transform="translate(50, 500)">
+    <rect x="0" y="0" width="820" height="80" rx="6" fill="#EFF6FF" stroke="#BFDBFE" stroke-width="1"/>
+    <text x="20" y="25" font-family="Arial, sans-serif" font-size="13" font-weight="bold" fill="#1E40AF">Notes:</text>
+    <text x="20" y="45" font-family="Arial, sans-serif" font-size="11" fill="#3B82F6">
+      <tspan>• Each row represents one pixel (n = H × W total pixels)</tspan>
+    </text>
+    <text x="20" y="62" font-family="Arial, sans-serif" font-size="11" fill="#3B82F6">
+      <tspan>• Features (p) typically = number of PCs × number of TRs (e.g., 16 PCs × 3 TRs = 48 features)</tspan>
+    </text>
+    <text x="420" y="45" font-family="Arial, sans-serif" font-size="11" fill="#3B82F6">
+      <tspan>• Cross terms: C(p,2) = p(p-1)/2 unique pairs</tspan>
+    </text>
+  </g>
+
+</svg>
