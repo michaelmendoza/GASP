@@ -189,7 +189,7 @@ DATASETS = {
 # =============================================================================
 
 def load_dataset(name=None, url=None, path=None, subfolder=None, files=None,
-                 description=None, base_path=None):
+                 description=None, base_path=None, filter=None):
     """
     Load a dataset by name or by providing dataset parameters directly.
 
@@ -197,6 +197,7 @@ def load_dataset(name=None, url=None, path=None, subfolder=None, files=None,
         load_dataset('phantom_0')  # by name
         load_dataset(**DATASETS['phantom_0'])  # unpacking a dataset dict
         load_dataset(url='...', path='folder_name')  # direct parameters
+        load_dataset('phantom_dec2023', subfolder='gasp_fa20', filter='fa20')
 
     Args:
         name: Dataset name (key in DATASETS) or Google Drive URL (for backwards compat)
@@ -206,6 +207,8 @@ def load_dataset(name=None, url=None, path=None, subfolder=None, files=None,
         files: Optional list of specific files to load
         description: Dataset description (ignored, for dict unpacking compatibility)
         base_path: Base path for data storage. Defaults to project path.
+        filter: Optional string to filter files. Only files containing this string
+                will be loaded. Applied to both explicit file lists and auto-detected files.
 
     Returns:
         np.ndarray: Stacked data array with shape (..., n_files)
@@ -236,6 +239,10 @@ def load_dataset(name=None, url=None, path=None, subfolder=None, files=None,
     # Get files (from config or directory listing)
     if files is None:
         files = sorted(os.listdir(filepath))
+
+    # Apply filter if specified
+    if filter is not None:
+        files = [f for f in files if filter in f]
 
     logger.debug(f'Loading from: {filepath}')
     logger.debug(f'Files: {files}')
