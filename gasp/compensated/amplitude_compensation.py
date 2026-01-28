@@ -697,6 +697,7 @@ def run_compensated_gasp(
     method: str = "affine",
     known_t1: float | None = None,
     known_t2: float | None = None,
+    denormalize: bool = False,
 ):
     """
     Apply GASP with automatic amplitude compensation.
@@ -715,8 +716,16 @@ def run_compensated_gasp(
         Known T1 value for the test tissue (for simulations)
     known_t2 : float, optional
         Known T2 value for the test tissue (for simulations)
+    denormalize : bool
+        If True, scale output to restore T2/T1-based amplitude contrast.
+        This gives accurate spectral shaping while preserving tissue contrast.
+        Default: False (output matches normalized reference amplitude)
     """
     from ..gasp import run_gasp
+
+    # Get T1/T2 for this tissue (needed for denormalization)
+    t1 = known_t1 if known_t1 is not None else metadata.get('t1_estimate', 1.0)
+    t2 = known_t2 if known_t2 is not None else metadata.get('t2_estimate', 0.1)
 
     I_norm, _ = normalize_signals(
         I,
@@ -728,4 +737,22 @@ def run_compensated_gasp(
         known_t1=known_t1,
         known_t2=known_t2,
     )
-    return run_gasp(I_norm, coefficients, method=method)
+
+    output = run_gasp(I_norm, coefficients, method=method)
+
+    # Optionally denormalize to restore T2/T1-based contrast
+    if denormalize:
+        TR = metadata['TRs'][0]  # Use first TR for amplitude calculation
+        alpha = metadata['alpha']
+        t1_ref = 1.0  # Reference T1
+        t2_ref = metadata['reference_t2_t1'] * t1_ref
+
+        # Compute amplitude ratio: actual / reference
+        amp_actual = compute_ssfp_amplitude(t1, t2, TR, alpha)
+        amp_ref = compute_ssfp_amplitude(t1_ref, t2_ref, TR, alpha)
+
+        # Scale output to restore original amplitude
+        denorm_scale = amp_actual / (amp_ref + 1e-10)
+        output = output * denorm_scale
+
+    return output
