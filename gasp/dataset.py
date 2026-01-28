@@ -228,7 +228,8 @@ def load_dataset(name=None, url=None, path=None, subfolder=None, files=None,
         url = name
 
     # Download data
-    dataloader.download_data(url, path, base_path)
+    if (url is not None):
+        dataloader.download_data(url, path, base_path)
 
     # Build filepath
     if subfolder:
@@ -242,6 +243,7 @@ def load_dataset(name=None, url=None, path=None, subfolder=None, files=None,
 
     # Apply filter if specified
     if filter is not None:
+        logger.debug(f'Filter: {filter}')
         files = [f for f in files if filter in f]
 
     logger.debug(f'Loading from: {filepath}')
