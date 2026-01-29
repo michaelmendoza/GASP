@@ -207,8 +207,9 @@ def load_dataset(name=None, url=None, path=None, subfolder=None, files=None,
         files: Optional list of specific files to load
         description: Dataset description (ignored, for dict unpacking compatibility)
         base_path: Base path for data storage. Defaults to project path.
-        filter: Optional string to filter files. Only files containing this string
-                will be loaded. Applied to both explicit file lists and auto-detected files.
+        filter: Optional string or list of strings to filter files. Only files
+                containing the string (or any of the strings in the list) will be
+                loaded. Applied to both explicit file lists and auto-detected files.
 
     Returns:
         np.ndarray: Stacked data array with shape (..., n_files)
@@ -244,7 +245,10 @@ def load_dataset(name=None, url=None, path=None, subfolder=None, files=None,
     # Apply filter if specified
     if filter is not None:
         logger.debug(f'Filter: {filter}')
-        files = [f for f in files if filter in f]
+        if isinstance(filter, str):
+            files = [f for f in files if filter in f]
+        else:
+            files = [f for f in files if any(s in f for s in filter)]
 
     logger.debug(f'Loading from: {filepath}')
     logger.debug(f'Files: {files}')
