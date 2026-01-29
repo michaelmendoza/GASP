@@ -23,7 +23,10 @@ def dixon_3pt(M):
     Mw3 = np.sqrt(np.sum(np.abs(Mw3)**2, axis=2))
     Mf3 = np.sqrt(np.sum(np.abs(Mf3)**2, axis=2))
 
-    return Mw3, Mf3
+    # Coil combine with RSS
+    field_map = np.sqrt(np.sum(np.abs(field_map)**2, axis=2))
+
+    return Mw3, Mf3, field_map
 
 def plot_dixon(Mw, Mf):
     f = plt.figure(figsize=(8,8))
