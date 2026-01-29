@@ -244,10 +244,11 @@ def load_dataset(name=None, url=None, path=None, subfolder=None, files=None,
 
     # Apply filter if specified
     if filter is not None:
-        logger.debug(f'Filter: {filter}')
         if isinstance(filter, str):
+            logger.debug(f'Filter: {filter}')
             files = [f for f in files if filter in f]
         else:
+            logger.debug(f'Filter: {",".join(filter)}')
             files = [f for f in files if any(s in f for s in filter)]
 
     logger.debug(f'Loading from: {filepath}')
